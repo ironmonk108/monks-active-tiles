@@ -2210,7 +2210,19 @@ export class MonksActiveTiles {
                     if ((triggerData.controlled == 'gm' && !game.user.isGM) || (triggerData.controlled == 'player' && game.user.isGM))
                         return;
 
-                    let tokens = canvas.tokens.controlled.map(t => t.document);
+                    let tokens;
+                    if (event.data.tokens) {
+                        if (Array.isArray(event.data.tokens)) {
+                            tokens = event.data.tokens;
+                        } else {
+                            tokens = [event.data.tokens];
+                        }
+                    } else if (event.data.token) {
+                        tokens = [event.data.token];
+                    } else {
+                        tokens = canvas.tokens.controlled.map(t => t.document);
+                    }
+                    
                     //check to see if this trigger is per token, and already triggered
                     if (triggerData.pertoken) {
                         tokens = tokens.filter(t => !doc.hasTriggered(t.id)); //.uuid
