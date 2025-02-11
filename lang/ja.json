@@ -207,6 +207,7 @@
   "MonksActiveTiles.ctrl.delay": "遅延(秒)",
   "MonksActiveTiles.ctrl.limit": "限界(ループ)",
   "MonksActiveTiles.ctrl.resume": "限界到達後に再開",
+  "MonksActiveTiles.ctrl.resumeloop": "Resume after looping",
   "MonksActiveTiles.ctrl.preservesettings": "コマが既に存在している場合は設定を保持します。",
   "MonksActiveTiles.ctrl.images": "画像",
   "MonksActiveTiles.ctrl.imgat": "参照する画像番号：",
