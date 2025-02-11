@@ -1,19 +1,19 @@
 {
-  "Localization Provided by": "tonishi",
+  "Localization Provided by": "tonishi, doumoku",
   "MonksActiveTiles.Triggers": "トリガー",
   "MonksActiveTiles.TriggersHint": "トークンがこのタイルの上を移動するときに実行するアクション",
   "MonksActiveTiles.TriggersImages": "このタイルの追加の画像一覧",
   "MonksActiveTiles.TriggerAction": "トリガーアクション",
 
   "MonksActiveTiles.ThisTile": "このタイル",
-  "MonksActiveTiles.TriggeringToken": "発動させたトークン",
-  "MonksActiveTiles.PlayerTokens": "プレイヤーのトークン",
+  "MonksActiveTiles.TriggeringToken": "発動させたコマ",
+  "MonksActiveTiles.PlayerTokens": "プレイヤーのコマ",
   "MonksActiveTiles.CurrentLocation": "現在地",
-  "MonksActiveTiles.WithinTile": "タイル内のトークン",
+  "MonksActiveTiles.WithinTile": "タイル内のコマ",
   "MonksActiveTiles.WithinWall": "ドアの下のタイル",
   "MonksActiveTiles.CurrentCollection": "直前アクションで使用された{collection}",
   "MonksActiveTiles.Origin": "原点回帰",
-  "MonksActiveTiles.Controlled": "コントロールされたトークン",
+  "MonksActiveTiles.Controlled": "コントロールされたコマ",
   "MonksActiveTiles.CurrentlyPlaying": "再生中",
   "MonksActiveTiles.TileVariables": "タイル変数",
   "MonksActiveTiles.ClearVariables": "変数を削除",
@@ -29,13 +29,13 @@
   "MonksActiveTiles.Seconds": "秒",
   "MonksActiveTiles.CreateNewAction": "新しいアクションの作成",
   "MonksActiveTiles.Active": "有効化する",
-  "MonksActiveTiles.RestrictedTo": "トークン制限",
+  "MonksActiveTiles.RestrictedTo": "コマ制限",
   "MonksActiveTiles.ControlledBy": "制御",
   "MonksActiveTiles.When": "発動条件",
   "MonksActiveTiles.ChanceTrigger": "発動確率",
   "MonksActiveTiles.Add": "追加",
   "MonksActiveTiles.ToggleActive": "有効化の切り替え",
-  "MonksActiveTiles.PerToken": "トークン毎に一回のみ",
+  "MonksActiveTiles.PerToken": "コマ毎に一回のみ",
   "MonksActiveTiles.EditAction": "アクションの編集",
   "MonksActiveTiles.DeleteAction": "アクションの削除",
   "MonksActiveTiles.Actions": "アクション",
@@ -53,6 +53,15 @@
   "MonksActiveTiles.TileTemplates": "タイルのテンプレート",
   "MonksActiveTiles.Players": "プレイヤー",
   "MonksActiveTiles.Cooldown": "クールダウン (秒)",
+  "MonksActiveTiles.MultiplePlayers": "複数のプレイヤー（{players}）",
+  "MonksActiveTiles.UnknownPlayer": "不明なプレイヤー",
+  "MonksActiveTiles.MultipleLocations": "複数の場所 ({locations})",
+  "MonksActiveTiles.UnknownLocation": "不明な場所",
+  "MonksActiveTiles.MultipleEntities": "Multiple Entities ({entities})",
+  "MonksActiveTiles.UnknownEntity": "不明なエンティティ",
+  "MonksActiveTiles.ActiveScene": "有効化されたシーン",
+  "MonksActiveTiles.TriggeringTokenScene": "Triggering Token Scene",
+  "MonksActiveTiles.TokenVision": "発動にはコマに視覚が必要",
 
   "MonksActiveTiles.actiontext.pause": "<action>{pause} game</action>",
   "MonksActiveTiles.actiontext.delay": "<action>待機</action> ： <detail>\"{delay} seconds\"</detail>",
@@ -115,6 +124,12 @@
   "MonksActiveTiles.action.setcurrent": "現在の Active Tiles 一覧を設定",
   "MonksActiveTiles.action.closedialog": "ダイアログを閉じる",
   "MonksActiveTiles.action.url": "URLを開く",
+  "MonksActiveTiles.action.tempimage": "Temporary Tile Image",
+  "MonksActiveTiles.action.ping": "Ping",
+  "MonksActiveTiles.action.gametime": "Game Time",
+  "MonksActiveTiles.action.shuffle": "Shuffle Collection",
+  "MonksActiveTiles.action.preloadtileimage": "Preload Tile Images",
+  "MonksActiveTiles.action.runcode": "Run Code",
 
   "MonksActiveTiles.filter.distance": "トークンを距離でフィルタリング",
   "MonksActiveTiles.filter.exists": "エンティティ数の確認",
@@ -136,6 +151,7 @@
   "MonksActiveTiles.logic.loop": "エンティティ内をループ",
   "MonksActiveTiles.logic.method": "メソッドに基づきリダイレクト",
   "MonksActiveTiles.logic.checkdata": "データをチェック",
+  "MonksActiveTiles.logic.stoptriggers": "Stop additional tiles triggering",
 
   "MonksActiveTiles.ctrl.snap": "グリッドにスナップする",
   "MonksActiveTiles.ctrl.select-coordinates": "座標選択",
@@ -271,6 +287,16 @@
   "MonksActiveTiles.ctrl.action": "アクション",
   "MonksActiveTiles.ctrl.allowplayer": "プレイヤーが使用",
   "MonksActiveTiles.ctrl.resetcollection": "コレクションをリセット",
+  "MonksActiveTiles.ctrl.asimage": "As Image",
+  "MonksActiveTiles.ctrl.offset": "オフセット (ms)",
+  "MonksActiveTiles.ctrl.pingstyle": "Ping Style",
+  "MonksActiveTiles.ctrl.delayactions": "Delay Actions until finished",
+  "MonksActiveTiles.ctrl.time": "Time (min)",
+  "MonksActiveTiles.ctrl.landingname": "Landing Name",
+  "MonksActiveTiles.ctrl.resettype": "Reset Type",
+  "MonksActiveTiles.ctrl.triggerremote": "Trigger at Destination",
+  "MonksActiveTiles.ctrl.code": "Code",
+  "MonksActiveTiles.ctrl.hascondition": "Has",
 
   "MonksActiveTiles.mode.enter": "進入時",
   "MonksActiveTiles.mode.exit": "退出時",
@@ -319,13 +345,14 @@
   "MonksActiveTiles.add.add": "付与",
   "MonksActiveTiles.add.remove": "解除",
   "MonksActiveTiles.add.toggle": "トグル",
+  "MonksActiveTiles.add.clear": "クリア",
 
   "MonksActiveTiles.for.all": "全ての参加者",
   "MonksActiveTiles.for.gm": "GMのみ",
   "MonksActiveTiles.for.token": "トークンの所有者のみ",
   "MonksActiveTiles.for.player": "発動させたプレイヤーのみ",
   "MonksActiveTiles.for.players": "プレイヤーのみ",
-  "MonksActiveTiles.for.currentusers": "現在の参加者",
+  "MonksActiveTiles.for.current": "現在の参加者",
 
   "MonksActiveTiles.audiotype.all": "環境音",
   "MonksActiveTiles.audiotype.tile": "タイルサウンド",
@@ -345,6 +372,8 @@
   "MonksActiveTiles.animate.pause": "一時停止",
   "MonksActiveTiles.animate.stop": "ストップ",
   "MonksActiveTiles.animate.toggle": "トグル",
+  "MonksActiveTiles.animate.reset": "リセット",
+  "MonksActiveTiles.animate.resume": "再開",
 
   "MonksActiveTiles.pause.pause": "一時停止",
   "MonksActiveTiles.pause.unpause": "一時停止解除",
@@ -421,7 +450,21 @@
   "MonksActiveTiles.distribute.evenall": "全てのアイテムをキャラクター間で山分け",
   "MonksActiveTiles.distribute.even": "均一に山分け、余りは次に回す",
 
-  "MonksActiveTiles.msg.prevent-teleport": "マップ外へのテレポートを防止されました",
+  "MonksActiveTiles.ping.pulse": "Pulse",
+  "MonksActiveTiles.ping.alert": "Alert",
+  "MonksActiveTiles.ping.chevron": "Chevron",
+  "MonksActiveTiles.ping.arrow": "Arrow",
+
+  "MonksActiveTiles.resettype.everything": "Everything",
+  "MonksActiveTiles.resettype.token": "Token",
+
+  "MonksActiveTiles.permission.check": "Check Permission",
+  "MonksActiveTiles.permission.ignore": "Ignore Permissions",
+  "MonksActiveTiles.permission.limited": "Assign Limited Permission",
+  "MonksActiveTiles.permission.observer": "Assign Observer Permission",
+  "MonksActiveTiles.permission.owner": "Assign Owner Permission",
+  
+  "MonksActiveTiles.msg.prevent-teleport": "マップ外へのテレポートが防止されました",
   "MonksActiveTiles.msg.prevent-movement": "マップ外への移動が防止されました",
   "MonksActiveTiles.msg.invalid-entity": "無効なエンティティタイプです",
   "MonksActiveTiles.msg.invalid-location": "場所が無効です。同じシーンで選択してください",
@@ -447,6 +490,7 @@
   "MonksActiveTiles.msg.useplayerlocation": "プレイヤーコマの位置を使用",
   "MonksActiveTiles.msg.currentlyplaying": "現在プレイ中",
   "MonksActiveTiles.msg.useusers": "使用プレイヤー",
+  "MonksActiveTiles.msg.usescene": "Use active scene",
 
   "MonksActiveTiles.allow-player.name": "プレイヤー許可",
   "MonksActiveTiles.allow-player.hint": "GMが居なくてもプレイヤーにタイルトリガーを発動する権限を与えます",
@@ -465,7 +509,7 @@
   "MonksActiveTiles.default-trigger.name": "デフォルトのトリガー発動条件",
   "MonksActiveTiles.default-trigger.hint": "タイル作成時に使用されるデフォルトの発動条件を設定します。",
   "MonksActiveTiles.show-help.name": "ヒントの表示",
-  "MonksActiveTiles.show-help.hint": "複雑な値を持つフィールドに役立つアクションヒントを表示します。"
+  "MonksActiveTiles.show-help.hint": "複雑な値を持つフィールドに役立つアクションヒントを表示します。",
   "MonksActiveTiles.prevent-when-paused.name": "一時停止時に無効化",
   "MonksActiveTiles.prevent-when-paused.hint": "ゲームが一時停止時に、プレイヤーがタイルをトリガーできないようにします。",
   "MonksActiveTiles.allow-door-passthrough.name": "ドアの「貫通」クリックを許可",
@@ -473,5 +517,48 @@
   "MonksLittleDetails.drop-item-size.name": "ドロップするアイテムのサイズ",
   "MonksLittleDetails.drop-item-size.hint": "ドロップされたアイテムの大きさを設定します。",
   "MonksActiveTiles.show-landing.name": "ランディングのハイライト表示",
-  "MonksActiveTiles.show-landing.hint": "ランディング内で起きたアクションをハイライトします。"
+  "MonksActiveTiles.show-landing.hint": "ランディング内で起きたアクションをハイライトします。",
+  "MonksActiveTiles.drop-macro.name": "Drop Macro on Canvas",
+  "MonksActiveTiles.drop-macro.hint": "Allow macros dropped on the canvas to be created as Active Tiles",
+  "MonksActiveTiles.tile-edit.name": "Allow Tile Template Editing",
+  "MonksActiveTiles.tile-edit.hint": "Allow editing of Tile Templates, I'd strongly recommend not using this unless you're sure you know what you're doing",
+  "MonksActiveTiles.show-imageless.name": "Show Imageless Tile",
+  "MonksActiveTiles.show-imageless.hint": "Show the tile on the token layer to the GM if there's no image set",
+
+  "MonksActiveTiles.tabs.Setup": "Setup",
+  "MonksActiveTiles.tabs.Actions": "Actions",
+  "MonksActiveTiles.tabs.Images": "Images",
+
+  "MonksActiveTiles.history.ViewHistory": "履歴を閲覧",
+  "MonksActiveTiles.history.ViewVariables": "変数を閲覧",
+  "MonksActiveTiles.history.Token": "コマ",
+  "MonksActiveTiles.history.When": "いつ",
+  "MonksActiveTiles.history.How": "どうやって",
+  "MonksActiveTiles.history.Who": "誰が",
+  "MonksActiveTiles.history.Name": "名前",
+  "MonksActiveTiles.history.Value": "値",
+  
+  "TYPES": {
+    "RegionBehavior": {
+      "monks-active-tiles": {
+        "triggerTile": "Trigger Tile"
+      }
+    }
+  },
+  "BEHAVIOR": {
+    "TYPES": {
+      "triggerTile": {
+        "FIELDS": {
+          "uuid": {
+            "label": "タイル",
+            "hint": "トリガーするタイル"
+          },
+          "usetiletrigger": {
+            "label": "Trigger using event",
+            "hint": "Trigger the tile using the region event data"
+          }
+        }
+      }
+    }
+  }
 }
