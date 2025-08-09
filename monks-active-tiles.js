@@ -1985,7 +1985,7 @@ export class MonksActiveTiles {
 
         let wallCollide = function (ray) {
             for (let wall of scene.walls) {
-                if (lineSegmentIntersects(ray.A, ray.B, { x: wall.c[0], y: wall.c[1] }, { x: wall.c[2], y: wall.c[3] }))
+                if (foundry.utils.lineSegmentIntersects(ray.A, ray.B, { x: wall.c[0], y: wall.c[1] }, { x: wall.c[2], y: wall.c[3] }))
                     return true;
             }
             return false
