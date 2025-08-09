@@ -1553,14 +1553,23 @@ export class MonksActiveTiles {
             animations["movement"] = attributes;
         //if (positionChange)
          //   object.position.set(from.x ?? to.x, from.y ?? to.y);
-        let dr = to.rotation - from.rotation;
-        if (!isNaN(dr) && dr !== 0) {
-            let r = to.rotation;
-            if (dr > 180) r -= 360;
-            if (dr < -180) r += 360;
-            dr = r - from.rotation;
-            animations["rotation"] = [{ attribute: "rotation", from: (from.rotation * (Math.PI / 180)), to: (r * (Math.PI / 180)), parent: object }]; // Do not use Math.toRadians because that will normalise the number
+
+
+        let whence = from.rotation % 360;  // This fix suggests a problem elsewhere
+        let dr     = to.rotation - whence;
+
+        if (dr) {
+            const DEG_TO_RAD = Math.PI / 180;
+            let r = (dr + 540) % 360 - 180;
+
+            animations["rotation"] = [{
+                attribute: "rotation",
+                from:      whence       * DEG_TO_RAD,
+                to:        (whence + r) * DEG_TO_RAD,
+                parent:    object
+            }];
         }
+
         let hasAlpha = false;
         if (from.alpha != undefined && to.alpha != undefined && from.alpha != to.alpha) {
             animations["alpha"] = [{ parent: object, attribute: 'alpha', from: from.alpha, to: to.alpha }];
