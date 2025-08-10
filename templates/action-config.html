@@ -1,20 +1,13 @@
-<form class="trigger-action" autocomplete="off" onsubmit="event.preventDefault();">
-    <div class="action-container">
-        <p class="notes gmonly" style="display: none;">This action can only be performed when a GM is present</p>
-        <div class="form-group">
-            <label for="action">{{localize "MonksActiveTiles.Action"}}</label>
-            <div class="form-fields">
-                <select name="action" data-dtype="String">
-                    {{ selectGroups availableActions selected=object.action }}
-                </select>
-            </div>
+<div class="action-container">
+    <p class="notes gmonly" style="display: none;">This action can only be performed when a GM is present</p>
+    <div class="form-group">
+        <label for="action">{{localize "MonksActiveTiles.Action"}}</label>
+        <div class="form-fields">
+            <select name="action" data-dtype="String">
+                {{ selectGroups availableActions selected=action }}
+            </select>
         </div>
-        <div class="action-controls">
-        </div>
-        <footer class="sheet-footer flexrow">
-            <button type="submit" name="submit">
-                <i class="far fa-save"></i> {{localize "MonksActiveTiles.Update"}}
-            </button>
-        </footer>
     </div>
-</form>
+    <div class="action-controls">
+    </div>
+</div>

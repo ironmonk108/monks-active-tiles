@@ -2,8 +2,10 @@ import { MonksActiveTiles, log, error, setting, i18n, makeid } from '../monks-ac
 import { ActionConfig } from "../apps/action-config.js";
 import { TileHistory } from './tile-history.js';
 import { TileVariables } from './tile-variables.js';
+import { TileTemplates } from "./tile-templates.js";
 
-class ActiveTileContextMenu extends ContextMenu {
+/*
+class ActiveTileContextMenu extends foundry.applications.ux.ContextMenu {
     constructor(...args) {
         super(...args);
     }
@@ -11,20 +13,21 @@ class ActiveTileContextMenu extends ContextMenu {
     _setPosition(html, target) {
         super._setPosition(html, target);
 
-        let container = target.closest('.item-list');
+        let container = target.closest('.action-list,.image-list');
         let y = container.position().top + target.position().top - 65; //(target.position().top - container.scrollTop());// - 55;// - $(html).height();
 
         html.removeClass("expand-down").css({ "top": `${y}px` }).insertAfter(target.closest('.action-items'));
     }
 }
+*/
 
 export const WithActiveTileConfig = (TileConfig) => {
     class ActiveTileConfig extends TileConfig {
         constructor(...args) {
             super(...args);
 
-            if (foundry.utils.getProperty(this.object, "flags.monks-active-tiles") == undefined) {
-                this.object.flags = foundry.utils.mergeObject(this.object.flags, {
+            if (foundry.utils.getProperty(this.document, "flags.monks-active-tiles") == undefined) {
+                this.document.flags = foundry.utils.mergeObject(this.document.flags, {
                     'monks-active-tiles': {
                         active: true,
                         trigger: setting('default-trigger'),
@@ -38,52 +41,197 @@ export const WithActiveTileConfig = (TileConfig) => {
             }
         }
 
-        static get defaultOptions() {
-            let data = MonksActiveTiles.mergeArray(super.defaultOptions, {
-                classes: ["monks-active-tiles"],
-                scrollY: ["ol.item-list"],
-                dragDrop: [
-                    { dragSelector: ".items-list .item-list .item", dropSelector: ".items-list .item-list" },
-                    { dragSelector: ".files-list .file-list .item", dropSelector: ".files-list .file-list" }
-                ],
-                tabs: [{ navSelector: '.tabs[data-group="triggers"]', contentSelector: '.tab[data-tab="triggers"]', initial: "trigger-setup" }]
-            });
-            data.tabs[0].navSelector = ".sheet-tabs:not(.trigger-tabs)";
-
-            return data;
+        static DEFAULT_OPTIONS = {
+            classes: ["monks-active-tiles"],
+            actions: {
+                viewHistory: ActiveTileConfig.viewHistory,
+                viewVariables: ActiveTileConfig.viewVariables,
+                createAction: ActiveTileConfig._createAction,
+                editAction: ActiveTileConfig._editAction,
+                deleteAction: ActiveTileConfig._deleteAction,
+                stopSound: ActiveTileConfig._stopSound,
+                browseImages: ActiveTileConfig.browseImages,
+                browseFolders: ActiveTileConfig.browseFolders,
+                deleteImage: ActiveTileConfig.removeImage,
+                saveTemplate: ActiveTileConfig.saveTemplate,
+                /*
+            $('.add-image', html).on("click", this._activateFilePicker.bind(this, "file"));
+            $('.add-folder', html).on("click", this._activateFilePicker.bind(this, "folder"));
+            $('.filepath', html).on("change", this.addToFileList.bind(this));
+            $('.folderpath', html).on("change", this.addToFolderList.bind(this));
+            $('.image-list .image', html).on("dblclick", this.selectImage.bind(this));
+            */
+            },
+            //form: {
+            //    handler: ActiveTileConfig._updateObject,
+            //}
         }
 
-        getData(options) {
-            let data = super.getData(options);
-            //data.usingAlpha = ["click", "dblclick", "rightclick"].includes(data.data.flags["monks-active-tiles"]?.trigger);
+        static PARTS = {
+            tabs: { template: "templates/generic/tab-navigation.hbs" },
+            position: { template: "templates/scene/tile/position.hbs" },
+            appearance: { template: "templates/scene/tile/appearance.hbs" },
+            overhead: { template: "templates/scene/tile/overhead.hbs" },
+            activetile: {
+                template: "modules/monks-active-tiles/templates/active-tile-config.hbs",
+                templates: [
+                    "modules/monks-active-tiles/templates/action-partial.hbs",
+                    "modules/monks-active-tiles/templates/image-partial.hbs"
+                ]
+            },
+            footer: { template: "templates/generic/form-footer.hbs" }
+        };
 
-            data.triggerValues = this.object.getFlag("monks-active-tiles", "trigger");
-            data.triggerValues = data.triggerValues instanceof Array ? data.triggerValues : [data.triggerValues];
-            if (data.triggerValues.includes("both")) {
-                data.triggerValues.push("enter", "exit");
-                data.triggerValues.findSplice(t => t == "both");
+        static TABS = {
+            sheet: {
+                tabs: [
+                    { id: "position", icon: "fa-solid fa-location-dot" },
+                    { id: "appearance", icon: "fa-solid fa-image" },
+                    { id: "overhead", icon: "fa-solid fa-house" },
+                    { id: "activetile", icon: "fa-solid fa-running" }
+                ],
+                initial: "position",
+                labelPrefix: "TILE.TABS"
+            },
+            activetile: {
+                tabs: [
+                    { id: "setup", icon: "fa-solid fa-cog" },
+                    { id: "actions", icon: "fa-solid fa-running" },
+                    { id: "images", icon: "fa-solid fa-image" }
+                ],
+                initial: "setup",
+                labelPrefix: "MonksActiveTiles.tabs"
             }
-            if (data.triggerValues.includes("hover")) {
-                data.triggerValues.push("hoverin", "hoverout");
-                data.triggerValues.findSplice(t => t == "hover");
-            }
+        };
 
-            data.triggerNames = data.triggerValues.map(t => {
-                return Object.keys(MonksActiveTiles.triggerModes).includes(t) ? { id: t, name: MonksActiveTiles.triggerModes[t] } : null;
-            }).filter(t => !!t);
+        async _prepareContext(options) {
+            const context = await super._prepareContext(options);
+            context.tabs = this._prepareTabs("sheet");
 
-            data.triggers = Object.entries(MonksActiveTiles.triggerModes).map(([k, v]) => {
-                return {
-                    id: k,
-                    name: v,
-                    selected: data.triggerValues.includes(k)
-                }
+            context.buttons.unshift({
+                type: "button",
+                icon: "fas fa-save",
+                label: i18n("MonksActiveTiles.SaveAsTemplate"),
+                action: "saveTemplate",
+                cssClass: "small-button"
             });
+            return context;
+        }
 
-            data.preventPaused = setting("prevent-when-paused");
-            let fileindex = this.object.getFlag("monks-active-tiles", "fileindex");
-            data.index = (fileindex != undefined ? fileindex + 1 : '');
-            return data;
+        async _preparePartContext(partId, context, options) {
+            context = await super._preparePartContext(partId, context, options);
+            switch (partId) {
+                case "activetile":
+                    context.triggerValues = this.document.getFlag("monks-active-tiles", "trigger");
+                    context.triggerValues = context.triggerValues instanceof Array ? context.triggerValues : [context.triggerValues];
+                    if (context.triggerValues.includes("both")) {
+                        context.triggerValues.push("enter", "exit");
+                        context.triggerValues.findSplice(t => t == "both");
+                    }
+                    if (context.triggerValues.includes("hover")) {
+                        context.triggerValues.push("hoverin", "hoverout");
+                        context.triggerValues.findSplice(t => t == "hover");
+                    }
+
+                    context.triggerNames = context.triggerValues.map(t => {
+                        return Object.keys(MonksActiveTiles.triggerModes).includes(t) ? { id: t, name: MonksActiveTiles.triggerModes[t] } : null;
+                    }).filter(t => !!t);
+
+                    context.triggers = Object.entries(MonksActiveTiles.triggerModes).map(([k, v]) => {
+                        return {
+                            id: k,
+                            name: v,
+                            selected: context.triggerValues.includes(k)
+                        }
+                    });
+
+                    context.preventPaused = setting("prevent-when-paused");
+                    let fileindex = this.document.getFlag("monks-active-tiles", "fileindex");
+                    context.index = (fileindex != undefined ? fileindex + 1 : '');
+
+                    context = foundry.utils.mergeObject({ 'data.flags.monks-active-tiles.minrequired': 0 }, context);
+
+                    context.triggerModes = MonksActiveTiles.triggerModes;
+                    context.triggerRestriction = { 'all': i18n("MonksActiveTiles.restrict.all"), 'player': i18n("MonksActiveTiles.restrict.player"), 'gm': i18n("MonksActiveTiles.restrict.gm") };
+                    context.triggerControlled = { 'all': i18n("MonksActiveTiles.control.all"), 'player': i18n("MonksActiveTiles.control.player"), 'gm': i18n("MonksActiveTiles.control.gm") };
+
+                    context.actions = await Promise.all((this.document.getFlag('monks-active-tiles', 'actions') || [])
+                        .map(async (a) => {
+                            if (a) {
+                                let trigger = MonksActiveTiles.triggerActions[a.action];
+                                let content = (trigger == undefined ? 'Unknown' : i18n(trigger.name));
+                                if (trigger?.content) {
+                                    try {
+                                        content = await trigger.content(trigger, a, this.actions);
+                                    } catch (e) {
+                                        error(e);
+                                    }
+                                }
+
+                                let result = {
+                                    id: a.id,
+                                    action: a.action,
+                                    data: a.data,
+                                    content: content,
+                                    disabled: trigger?.visible === false
+                                }
+
+                                if (a.action == "activate" && a.data?.activate == "deactivate" && (a.data?.entity?.id == this.document.id || a.data?.entity == ""))
+                                    result.deactivated = "on";
+                                if (a.action == "anchor")
+                                    result.deactivated = "off";
+
+                                return result;
+                            }
+                        }).filter(a => !!a));
+
+                    if (setting("show-landing")) {
+                        let landings = [];
+                        let currentLanding = 0;
+                        for (let a of context.actions) {
+                            if (a.action == "anchor") {
+                                if (a.data.stop) {
+                                    landings = [];
+                                }
+
+                                landings.push(++currentLanding);
+                                a.marker = currentLanding;
+                                a.landingStop = a.data.stop;
+                            }
+                            a.landings = foundry.utils.duplicate(landings);
+                        }
+                    }
+
+                    let disabled = false;
+                    for (let a of context.actions) {
+                        if (a.deactivated == "off")
+                            disabled = false;
+                        if (disabled)
+                            a.disabled = true;
+                        if (a.deactivated == "on")
+                            disabled = true;
+                    }
+
+                    context.sounds = Object.entries(this.document.soundeffect || {}).filter(([k, v]) => !!v.src).map(([k, v]) => {
+                        let filename = v.src.split('\\').pop().split('/').pop();
+                        return {
+                            id: k,
+                            name: filename
+                        };
+                    });
+
+                    let index = this.document.getFlag('monks-active-tiles', 'fileindex') || 0;
+                    context.images = (this.document.getFlag('monks-active-tiles', 'files') || []).map((f, idx) => {
+                        f.selected = (index == idx);
+                        return f;
+                    });
+
+                    context.subtabs = this._prepareTabs("activetile");
+
+                    break;
+            }
+            if (partId in context.tabs) context.tab = context.tabs[partId];
+            return context;
         }
 
         async close(options = {}) {
@@ -95,192 +243,137 @@ export const WithActiveTileConfig = (TileConfig) => {
             return result;
         }
 
+        static saveTemplate(event, target) {
+            foundry.applications.api.DialogV2.confirm({
+                title: "Name of Template",
+                content: `
+<form>
+    <div class="form-group">
+        <label for= "name" >Template Name</label >
+        <div class="form-fields">
+            <input type="text" name="name" />
+        </div>
+    </div>
+</form>`,
+                form: {
+                    closeOnSubmit: true,
+                },
+                yes: {
+                    callback: async (event, button) => {
+                        const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
+                        if (!fd.name)
+                            return ui.notifications.error("Tile templates require a name");
+
+                        let templates = setting("tile-templates") || [];
+                        let data = this.options.document.toObject();
+                        data._id = data.id = foundry.utils.randomID();
+                        data.name = fd.name;
+                        data.visible = true;
+                        delete data.img;
+                        data.img = data.texture.src;
+                        data.thumbnail = data.img || "modules/monks-active-tiles/img/cube.svg";
+                        if (foundry.helpers.media.VideoHelper.hasVideoExtension(data.thumbnail)) {
+                            const t = await foundry.helpers.media.ImageHelper.createThumbnail(data.thumbnail, { width: 60, height: 60 });
+                            data.thumbnail = t.thumb;
+                        }
+                        templates.push(data);
+                        game.settings.set("monks-active-tiles", "tile-templates", templates);
+                        ui.notifications.info("Tile information has been saved to Tile Templates.");
+                        if (!MonksActiveTiles.tile_directory)
+                            MonksActiveTiles.tile_directory = await new TileTemplates();
+                        MonksActiveTiles.tile_directory.renderPopout();
+                    }
+                },
+                options: {
+                    width: 400
+                }
+            }
+            );
+        }
+
         get actions() {
-            return this.object.getFlag("monks-active-tiles", "actions") || [];
+            return this.document.getFlag("monks-active-tiles", "actions") || [];
         }
 
         get files() {
-            return this.object.getFlag("monks-active-tiles", "files") || [];
-        }
-
-        async _renderInner(data) {
-            let html = await super._renderInner(data);
-
-            if ($('.sheet-tabs a[data-tab="triggers"]', html).length == 0)
-                $('.sheet-tabs', html).append($('<a>').addClass('item').attr('data-tab', "triggers").html(`<i class="fas fa-running"></i> ${i18n("MonksActiveTiles.Triggers")}`));
-            if ($('.sheet-tabs .tab[data-tab="triggers"]', html).length == 0) {
-                let tab = $('<div>').addClass('tab').attr('data-tab', "triggers").css({ "position": "relative" }).insertAfter($('div[data-tab="animation"]', html));
-
-                let template = "modules/monks-active-tiles/templates/tile-config.html";
-                const tiledata = foundry.utils.mergeObject({ 'data.flags.monks-active-tiles.minrequired': 0 }, data);
-
-                tiledata.triggerModes = MonksActiveTiles.triggerModes;
-                tiledata.triggerRestriction = { 'all': i18n("MonksActiveTiles.restrict.all"), 'player': i18n("MonksActiveTiles.restrict.player"), 'gm': i18n("MonksActiveTiles.restrict.gm") };
-                tiledata.triggerControlled = { 'all': i18n("MonksActiveTiles.control.all"), 'player': i18n("MonksActiveTiles.control.player"), 'gm': i18n("MonksActiveTiles.control.gm") };
-
-                tiledata.actions = await Promise.all((this.object.getFlag('monks-active-tiles', 'actions') || [])
-                    .map(async (a) => {
-                        if (a) {
-                            let trigger = MonksActiveTiles.triggerActions[a.action];
-                            let content = (trigger == undefined ? 'Unknown' : i18n(trigger.name));
-                            if (trigger?.content) {
-                                try {
-                                    content = await trigger.content(trigger, a, this.actions);
-                                } catch (e) {
-                                    error(e);
-                                }
-                            }
-
-                            let result = {
-                                id: a.id,
-                                action: a.action,
-                                data: a.data,
-                                content: content,
-                                disabled: trigger?.visible === false
-                            }
-
-                            if (a.action == "activate" && a.data?.activate == "deactivate" && (a.data?.entity?.id == this.object.id || a.data?.entity == ""))
-                                result.deactivated = "on";
-                            if (a.action == "anchor")
-                                result.deactivated = "off";
-
-                            return result;
-                        }
-                    }).filter(a => !!a));
-
-                if (setting("show-landing")) {
-                    let landings = [];
-                    let currentLanding = 0;
-                    for (let a of tiledata.actions) {
-                        if (a.action == "anchor") {
-                            if (a.data.stop) {
-                                landings = [];
-                            }
-
-                            landings.push(++currentLanding);
-                            a.marker = currentLanding;
-                            a.landingStop = a.data.stop;
-                        }
-                        a.landings = foundry.utils.duplicate(landings);
-                    }
-                }
-
-                let disabled = false;
-                for (let a of tiledata.actions) {
-                    if (a.deactivated == "off")
-                        disabled = false;
-                    if (disabled)
-                        a.disabled = true;
-                    if (a.deactivated == "on")
-                        disabled = true;
-                }
-
-                tiledata.sounds = Object.entries(this.object.soundeffect || {}).filter(([k, v]) => !!v.src).map(([k, v]) => {
-                    let filename = v.src.split('\\').pop().split('/').pop();
-                    return {
-                        id: k,
-                        name: filename
-                    };
-                });
-
-                let index = this.object.getFlag('monks-active-tiles', 'fileindex') || 0;
-                tiledata.files = (this.object.getFlag('monks-active-tiles', 'files') || []).map((f, idx) => {
-                    f.selected = (index == idx);
-                    return f;
-                });
-
-                let renderhtml = await renderTemplate(template, tiledata);
-                tab.append(renderhtml);
-            }
-
-            return html;
-        }
-
-        _onChangeTab(event, tabs, active) {
-            if (active == "triggers") {
-                this._tabs[1].activate(this._tabs[1].active);
-            }
-            super._onChangeTab.bind(this, event, tabs, active)();
-        }
-
-        _onDragStart(event) {
-            let li = event.currentTarget.closest(".item");
-            let list = event.currentTarget.closest(".items-list");
-            if (list) {
-                const dragData = {
-                    type: this.object.constructor.documentName,
-                    tileId: this.object.id,
-                    collection: list.dataset.collection,
-                    id: li.dataset.id
-                };
-                event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
-                this._dragType = dragData.type;
-            }
+            return this.document.getFlag("monks-active-tiles", "files") || [];
         }
 
         _canDragStart(selector) {
             return true;
         }
 
-        async _onDrop(event) {
-            const cls = this.constructor.documentName;
+        _canDragDrop(selector) {
+            return true;
+        }
 
+        _onDragStart(event) {
+            let li = event.currentTarget.closest(".entry");
+            let list = event.currentTarget.closest("[data-collection]");
+            if (list && li) {
+                const dragData = {
+                    type: this.document.constructor.documentName,
+                    tileId: this.document.id,
+                    collection: list.dataset.collection,
+                    id: li.dataset.entryId
+                };
+                event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+                this._dragType = dragData.type;
+            }
+        }
+
+        async _onDrop(event) {
             // Try to extract the data
-            let data;
-            try {
-                data = JSON.parse(event.dataTransfer.getData('text/plain'));
-            }
-            catch (err) {
-                return false;
-            }
+            let data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
 
             // Identify the drop target
-            let target = event.target.closest(".item") || null;
-            const list = event.target.closest(".items-list") || null;
+            let target = event.target.closest(".entry") || null;
+            const list = event.target.closest("[data-collection]") || null;
 
-            if (data.tileId != this.object.id) {
-                if (data.collection == list.dataset.collection) {
+            const collection = list?.dataset?.collection || null;
+
+            if (data.tileId != this.document.id && collection) {
+                // This is coming from a different tile
+                if (data.collection == collection) {
                     let src = canvas.scene.tiles.get(data.tileId);
-                    let action = foundry.utils.getProperty(src, "flags.monks-active-tiles.actions")?.find(a => a.id == data.id);
+                    let entry = foundry.utils.getProperty(src, `flags.monks-active-tiles.${collection}`)?.find(a => a.id == data.id);
 
-                    if (action) {
-                        let newAction = foundry.utils.duplicate(action);
-                        newAction.id = makeid();
-                        let items = foundry.utils.duplicate(this[list.dataset.collection]);
-                        if (items.length && !target)
-                            target = $(`li[data-id="${items[0].id}"]`, this.element).get(0);
-                        let to = items.findIndex(a => a.id == target?.dataset.id) || 0;
-                        items.splice(to, 0, newAction);
-                        this.object.flags["monks-active-tiles"][list.dataset.collection] = items;
+                    if (entry) {
+                        let newEntry = foundry.utils.duplicate(entry);
+                        newEntry.id = makeid();
+                        let entries = foundry.utils.duplicate(this[collection]);
+                        if (entries.length && !target)
+                            target = $(`li[data-entry-id="${entries[0].id}"]`, this.element).get(0);
+                        let to = entries.findIndex(a => a.id == target?.dataset.entryId) || 0;
+                        entries.splice(to, 0, newEntry);
+                        foundry.utils.setProperty(this.document, `flags.monks-active-tiles.${collection}`, entries);
 
-                        let element = $(`.action-items li[data-id="${data.id}"]`).clone();
+                        let element = $(`li[data-entry-id="${data.id}"]`).clone().attr('data-entry-id', newAction.id).attr(`data-${collection.slice(0, -1) }-id`, newAction.id)
                         if (target)
-                            $(element).attr('data-id', newAction.id).insertBefore(target);
+                            $(element).insertBefore(target);
                         else
-                            $('.item-list', list).append(element);
-                        $('.action-edit', element).click(this._editAction.bind(this));
-                        $('.action-delete', element).click(this._deleteAction.bind(this));
+                            $(list).append(element);
                         element[0].addEventListener("dragstart", this._onDragStart.bind(this));
                         this.setPosition({ height: 'auto' });
                     }
                 }
             } else {
-                // Call the drop handler
-                if (target && target.dataset.id) {
-                    let items = foundry.utils.duplicate(this[list.dataset.collection]);
+                // This is to reposition an entry on the same tile
+                if (target && target.dataset.entryId) {
+                    let entries = foundry.utils.duplicate(this[collection]);
 
-                    if (data.id === target.dataset.id) return; // Don't drop on yourself
+                    if (data.id === target.dataset.entryId) return; // Don't drop on yourself
 
-                    let from = items.findIndex(a => a.id == data.id);
-                    let to = items.findIndex(a => a.id == target.dataset.id);
+                    let from = entries.findIndex(a => a.id == data.id);
+                    let to = entries.findIndex(a => a.id == target.dataset.entryId);
                     log('from', from, 'to', to);
-                    items.splice(to, 0, items.splice(from, 1)[0]);
+                    entries.splice(to, 0, entries.splice(from, 1)[0]);
 
-                    this.object.flags["monks-active-tiles"][list.dataset.collection] = items;
+                    foundry.utils.setProperty(this.document, `flags.monks-active-tiles.${collection}`, entries);
                     if (from < to)
-                        $('.item[data-id="' + data.id + '"]', this.element).insertAfter(target);
+                        $('.entry[data-entry-id="' + data.id + '"]', this.element).insertAfter(target);
                     else
-                        $('.item[data-id="' + data.id + '"]', this.element).insertBefore(target);
+                        $('.entry[data-entry-id="' + data.id + '"]', this.element).insertBefore(target);
                 }
             }
         }
@@ -290,7 +383,7 @@ export const WithActiveTileConfig = (TileConfig) => {
             if (!canvas.ready) return;
             const li = event.currentTarget;
 
-            let action = this.actions.find(a => a.id == li.dataset.id);
+            let action = this.actions.find(a => a.id == li.dataset.actionId);
             if (action && action.data.entity && !['tile', 'token', 'players', 'within', 'controlled', 'previous'].includes(action.data.entity.id)) {
                 let entity = await fromUuid(action.data.entity.id);
                 if (entity && entity._object) {
@@ -306,94 +399,120 @@ export const WithActiveTileConfig = (TileConfig) => {
             this._highlighted = null;
         }
 
-        _getSubmitData(updateData = {}) {
-            let data = super._getSubmitData(updateData);
-            data["flags.monks-active-tiles.actions"] = (this.object.getFlag("monks-active-tiles", "actions") || []);
-            data["flags.monks-active-tiles.files"] = (this.object.getFlag("monks-active-tiles", "files") || []);
+        _processFormData(event, form, formData) {
+            formData.object["flags.monks-active-tiles.actions"] = (this.document.getFlag("monks-active-tiles", "actions") || []);
+            formData.object["flags.monks-active-tiles.files"] = (this.document.getFlag("monks-active-tiles", "files") || []);
 
-            if (data["flags.monks-active-tiles.fileindex"] != '')
-                data["flags.monks-active-tiles.fileindex"] = data["flags.monks-active-tiles.fileindex"] - 1;
+            if (formData.object["flags.monks-active-tiles.fileindex"] != '')
+                formData.object["flags.monks-active-tiles.fileindex"] = formData.object["flags.monks-active-tiles.fileindex"] - 1;
 
-            if (typeof data["flags.monks-active-tiles.trigger"] == "string")
-                data["flags.monks-active-tiles.trigger"] = data["flags.monks-active-tiles.trigger"].split(",");
+            if (typeof formData.object["flags.monks-active-tiles.trigger"] == "string")
+                formData.object["flags.monks-active-tiles.trigger"] = formData.object["flags.monks-active-tiles.trigger"].split(",");
 
-            return data;
+            return super._processFormData(event, form, formData);
         }
 
-        async _updateObject(event, formData) {
-            this.object._images = await MonksActiveTiles.getTileFiles(this.object.flags["monks-active-tiles"].files || []);
+        async _processSubmitData(event, form, submitData, options = {}) {
+            this.document._images = await MonksActiveTiles.getTileFiles(foundry.utils.getProperty(submitData, "flags.monks-active-tiles.files") || foundry.utils.getProperty(this.document, "flags.monks-active-tiles.files") || []);
 
-            if (!this.object.id && this.object._images.length) {
-                let fileindex = Math.clamp(this.object.flags["monks-active-tiles"].fileindex, 0, this.object._images.length - 1);
-                if (this.object._images[fileindex] != this.object.texture.src) {
-                    formData["texture.src"] = this.object._images[fileindex];
+            if (this.document._images.length) {
+                let fileindex = Math.clamp(parseInt(foundry.utils.getProperty(submitData, "flags.monks-active-tiles.fileindex")), 0, this.document._images.length - 1);
+                if (this.document._images[fileindex] != this.document.texture.src) {
+                    foundry.utils.setProperty(submitData, "texture.src", this.document._images[fileindex]);
                 }
-                if (fileindex != this.object.flags["monks-active-tiles"].fileindex) {
+                if (fileindex != foundry.utils.getProperty(submitData, "flags.monks-active-tiles.fileindex")) {
+                    foundry.utils.setProperty(submitData, "flags.monks-active-tiles.fileindex", fileindex);
+                }
+            }
+            await super._processSubmitData(event, form, submitData, options);
+        }
+
+        /*
+        static async _updateObject(event, form, formData, options = {}) {
+            this.document._images = await MonksActiveTiles.getTileFiles(foundry.utils.getProperty(this.document, "flags.monks-active-tiles.files") || []);
+
+            if (!this.document.id && this.document._images.length) {
+                let fileindex = Math.clamp(this.document.flags["monks-active-tiles"].fileindex, 0, this.document._images.length - 1);
+                if (this.document._images[fileindex] != this.document.texture.src) {
+                    formData["texture.src"] = this.document._images[fileindex];
+                }
+                if (fileindex != this.document.flags["monks-active-tiles"].fileindex) {
                     formData["flags.monks-active-tiles.fileindex"] = fileindex;
                 }
             }
 
-            await super._updateObject(event, formData);
+            await super._updateObject(event, form, formData, options);
 
-            if (this.object.id && this.object._images.length) {
-                let fileindex = Math.clamp(this.object.flags["monks-active-tiles"].fileindex, 0, this.object._images.length - 1);
-                if (this.object._images[fileindex] != this.object.texture.src) {
-                    await this.object.update({ texture: { src: this.object._images[fileindex] } });
+            if (this.document.id && this.document._images.length) {
+                let fileindex = Math.clamp(this.document.flags["monks-active-tiles"].fileindex, 0, this.document._images.length - 1);
+                if (this.document._images[fileindex] != this.document.texture.src) {
+                    await this.document.update({ texture: { src: this.document._images[fileindex] } });
                 }
-                if (fileindex != this.object.flags["monks-active-tiles"].fileindex) {
-                    await this.object.setFlag("monks-active-tiles", "fileindex", fileindex);
+                if (fileindex != this.document.flags["monks-active-tiles"].fileindex) {
+                    await this.document.setFlag("monks-active-tiles", "fileindex", fileindex);
                 }
             }
+        }*/
+
+        static viewHistory() {
+            new TileHistory({ document: this.document }).render(true);
         }
 
-        activateListeners(html) {
-            super.activateListeners(html);
-            var that = this;
+        static viewVariables() {
+            new TileVariables({ document: this.document }).render(true);
+        }
+
+        async _onRender(context, options) {
+            await super._onRender(context, options);
+
+            $('.small-button', this.element).each(function () {
+                $(this).attr("data-tooltip", $("span", this).html());
+                $("span", this).remove();
+            });
 
             const contextOptions = this._getContextOptions();
-            Hooks.call(`getActiveTileConfigContext`, html, contextOptions);
-            new ActiveTileContextMenu($(html), ".action-items .item", contextOptions);
+            Hooks.call(`getActiveTileConfigContext`, this.element, contextOptions);
+            new foundry.applications.ux.ContextMenu(this.element, ".action-list .action", contextOptions, { fixed: true, jQuery: false });
 
-            $('.action-create', html).click(this._createAction.bind(this, -1));
-            $('.action-edit', html).click(this._editAction.bind(this));
-            $('.action-delete', html).click(this._deleteAction.bind(this));
-            $('.action-stop', html).click(this._stopSound.bind(this));
-            $('.view-history', html).click(function () {
-                new TileHistory(that.object).render(true);
-            });
-            $('.view-variables', html).click(function () {
-                new TileVariables(that.object).render(true);
-            });
+            $('.record-history', this.element).click(this.checkRecordHistory.bind(this));
+            $('.per-token', this.element).click(this.checkPerToken.bind(this));
 
-            $('.record-history', html).click(this.checkRecordHistory.bind(this));
-            $('.per-token', html).click(this.checkPerToken.bind(this));
-
-            /*
-            $('select[name="flags.monks-active-tiles.trigger"]', html).change(function () {
-                $('.usealpha', html).toggle(["click", "dblclick", "rightclick"].includes($(this).val()));
-                that.setPosition();
-            });
-            */
-
-            //$('div[data-tab="triggers"] .item-list li.item', html).hover(this._onActionHoverIn.bind(this), this._onActionHoverOut.bind(this));
-            $('.browse-files', html).on("click", this.browseFiles.bind(this));
-            $('.browse-folder', html).on("click", this.browseFolders.bind(this));
-            $('.add-image', html).on("click", this._activateFilePicker.bind(this, "file"));
-            $('.add-folder', html).on("click", this._activateFilePicker.bind(this, "folder"));
-            $('.filepath', html).on("change", this.addToFileList.bind(this));
-            $('.folderpath', html).on("change", this.addToFolderList.bind(this));
-            $('.file-list .edit-file', html).on("click", this.browseFiles.bind(this));
-            $('.file-list .delete-file', html).on("click", this.removeFile.bind(this));
-            $('.file-list .item', html).on("dblclick", this.selectFile.bind(this));
-
-            $('.multiple-dropdown-select', html).click((event) => {
+            $('.multiple-dropdown-select', this.element).click((event) => {
                 $('.multiple-dropdown-select .dropdown-list', this.element).toggleClass('open');
                 event.preventDefault();
                 event.stopPropagation();
             });
-            $(html).click(() => { $('.multiple-dropdown-select .dropdown-list', this.element).removeClass('open'); });
-            $('.multiple-dropdown-select .remove-option', html).on("click", this.removeTrigger.bind(this));
-            $('.multiple-dropdown-select .multiple-dropdown-item', html).on("click", this.selectTrigger.bind(this));
+            $(this.element).click(() => { $('.multiple-dropdown-select .dropdown-list', this.element).removeClass('open'); });
+            $('.multiple-dropdown-select .remove-option', this.element).on("click", this.removeTrigger.bind(this));
+            $('.multiple-dropdown-select .multiple-dropdown-item', this.element).on("click", this.selectTrigger.bind(this));
+
+            $('.image-list .image', this.element).on("dblclick", this.selectImage.bind(this));
+
+            new foundry.applications.ux.DragDrop.implementation({
+                dragSelector: ".action-list .action .name",
+                dropSelector: ".actions-group",
+                permissions: {
+                    dragstart: this._canDragStart.bind(this),
+                    drop: this._canDragDrop.bind(this)
+                },
+                callbacks: {
+                    dragstart: this._onDragStart.bind(this),
+                    drop: this._onDrop.bind(this)
+                }
+            }).bind(this.element);
+
+            new foundry.applications.ux.DragDrop.implementation({
+                dragSelector: ".image-list .image .name",
+                dropSelector: ".images-group",
+                permissions: {
+                    dragstart: this._canDragStart.bind(this),
+                    drop: this._canDragDrop.bind(this)
+                },
+                callbacks: {
+                    dragstart: this._onDragStart.bind(this),
+                    drop: this._onDrop.bind(this)
+                }
+            }).bind(this.element);
         }
 
         selectTrigger(event) {
@@ -402,7 +521,7 @@ export const WithActiveTileConfig = (TileConfig) => {
             // if this item is already in the list, then remove it, otherwise add it
 
             let id = $(event.currentTarget).attr("value");
-            let triggers = $('input[name="flags.monks-active-tiles.trigger"]', this.element).val().split(",");
+            let triggers = $('input[name="flags.monks-active-tiles.trigger"]', this.element).val().split(",").filter(t => !!t);
             if (triggers.includes(id)) {
                 // remove trigger
                 triggers.findSplice(t => t === id);
@@ -435,54 +554,48 @@ export const WithActiveTileConfig = (TileConfig) => {
             $(`.multiple-dropdown-item.selected[value="${id}"]`, this.element).removeClass("selected");
         }
 
-        browseFiles(event) {
-            event.preventDefault();
-            $(event.currentTarget).next().click();
+        static browseImages(event) {
+            this.requestFiles.call(this, "file", event);
         }
 
-        browseFolders(event) {
-            event.preventDefault();
-            $(event.currentTarget).next().click();
+        static browseFolders(event) {
+            this.requestFiles.call(this, "folder", event);
         }
 
-        _activateFilePicker(type, event) {
+        async requestFiles(type, event) {
             if (event == undefined) {
                 event = type;
                 type = null;
             }
             event?.preventDefault();
-            const options = this._getFilePickerOptions(event);
-            if (type == "folder")
-                options.type = type
-            options.wildcard = true;
-            options.fileid = event.currentTarget.closest('.item')?.dataset?.id;
-            const fp = new FilePicker(options);
-            this.filepickers.push(fp);
+            const options = {
+                type: type == "folder" ? "folder" : "image",
+                wildcard: true,
+                callback: type == "folder" ? this.addFolder.bind(this) : this.addFile.bind(this),
+            };
+            //this._getFilePickerOptions(event);
+
+            const fp = new CONFIG.ux.FilePicker.implementation(options);
+            //this.filepickers.push(fp);
             return fp.browse();
         }
 
-        addToFileList(event) {
-            let filename = $(event.currentTarget).val();
+        async addFile(filename, filePicker) {
             if (filename != '') {
-                let id = $(event.currentTarget).parent().get(0)?.dataset.id;
-
-                let result = this.addFile(id, filename);
-                $(event.currentTarget).val('');
-                if (result) {
-                    let files = foundry.utils.duplicate(this.files);
-                    files.push(result);
-                    foundry.utils.mergeObject(this.object.flags, {
-                        "monks-active-tiles": { files: files }
-                    });
-                }
+                let file = { id: makeid(), name: filename, selected: false };
+                await this.addImageEntry(file);
+                let files = foundry.utils.duplicate(this.files);
+                files.push(file);
+                foundry.utils.mergeObject(this.document.flags, {
+                    "monks-active-tiles": { files: files }
+                });
                 this.setPosition({ height: 'auto' });
             }
         }
 
-        async addToFolderList(event) {
-            let id = $(event.currentTarget).parent().get(0)?.dataset.id;
+        async addFolder(foldername, filepicker) {
             let source = "data";
-            let pattern = $(event.currentTarget).val();
+            let pattern = foldername;
             const browseOptions = {};
 
             if (typeof ForgeVTT != "undefined" && ForgeVTT.usingTheForge) {
@@ -501,17 +614,17 @@ export const WithActiveTileConfig = (TileConfig) => {
 
             // Retrieve wildcard content
             try {
-                const content = await FilePicker.browse(source, pattern, browseOptions);
+                const content = await foundry.applications.apps.FilePicker.implementation.browse(source, pattern, browseOptions);
                 let files = foundry.utils.duplicate(this.files);
-                for (let file of content.files) {
-                    let ext = file.substr(file.lastIndexOf('.') + 1);
+                for (let filename of content.files) {
+                    let ext = filename.substr(filename.lastIndexOf('.') + 1);
                     if (CONST.IMAGE_FILE_EXTENSIONS[ext] != undefined) {
-                        let result = this.addFile(id, file);
-                        if (result)
-                            files.push(result);
+                        let file = { id: makeid(), name: filename, selected: false }
+                        await this.addImageEntry(file);
+                        files.push(file);
                     }
                 }
-                foundry.utils.mergeObject(this.object.flags, {
+                foundry.utils.mergeObject(this.document.flags, {
                     "monks-active-tiles": { files: files }
                 });
                 this.setPosition({ height: 'auto' });
@@ -520,87 +633,74 @@ export const WithActiveTileConfig = (TileConfig) => {
             }
         }
 
-        addFile(id, filename) {
-            if (filename != '') {
-                if (id) {
-                    let file = this.files.find(f => f.id == id);
-                    file.name = filename;
-                    $(`.item[data-id="${id}"] .image-name`, this.element).html(filename);
-                } else {
-                    id = makeid();
-                    $('.file-list', this.element).append($('<li>').attr('data-id', id).attr('draggable', 'true').attr('data-collection', 'files')
-                        .addClass('flexrow file-row item')
-                        .append($('<input>').addClass("filepath").attr({ 'type': 'hidden', 'name': `files.${id}.name` }).val(filename).change(this.addToFileList.bind(this)))
-                        .append($('<div>').attr('title', filename).addClass('image-name').html(filename))
-                        .append($('<a>').addClass('edit-file').html('<i class="fas fa-edit fa-sm"></i>').click(this.browseFiles.bind(this)))
-                        .append($('<button>').addClass("add-image").attr('type', 'button').attr("data-target", `files.${id}.name`).hide().click(this._activateFilePicker.bind(this)))
-                        .append($('<a>').addClass('delete-file').html('<i class="fas fa-trash fa-sm"></i>').click(this.removeFile.bind(this))));
-                    return { id: id, name: filename, selected: false };
-                }
+        async addImageEntry({ id, name }) {
+            if (name != '') {
+                let html = await foundry.applications.handlebars.renderTemplate("modules/monks-active-tiles/templates/image-partial.hbs", { id, name });
+                let li = $(html);
+                $(`.image-list`, this.element).append(li);
+                $(".name", li)[0].addEventListener("dragstart", this._onDragStart.bind(this));
             }
         }
 
-        selectFile(event) {
-            let id = event.currentTarget.closest('.file-row').dataset["id"];
+        selectImage(event) {
+            let id = event.currentTarget.closest('.image').dataset.imageId;
             let idx = this.files.findIndex(f => f.id == id);
 
             $(`input[name="flags.monks-active-tiles.fileindex"]`, this.element).val(idx);
 
-            foundry.utils.mergeObject(this.object.flags, {
+            foundry.utils.mergeObject(this.document.flags, {
                 "monks-active-tiles": { fileindex: idx }
             });
         }
 
-        removeFile(event) {
-            let id = event.currentTarget.closest('.file-row').dataset["id"];
+        static removeImage(event, target) {
+            let id = target.closest('.image').dataset.imageId;
             let files = foundry.utils.duplicate(this.files);
             files.findSplice(i => i.id == id);
-            foundry.utils.mergeObject(this.object.flags, {
+            foundry.utils.mergeObject(this.document.flags, {
                 "monks-active-tiles": { files: files }
             });
 
-            $(`.file-list li[data-id="${id}"]`, this.element).remove();
+            $(`.image-list li[data-image-id="${id}"]`, this.element).remove();
             this.setPosition({ height: 'auto' });
         }
 
-        _createAction(index, event) {
+        static async _createAction(event, target, index = -1) {
             let action = { };
-            //if (this.object.getFlag("monks-active-tiles", "actions") == undefined)
-            //    this.object.setFlag("monks-active-tiles", "actions", []);
-            this.actionconfig = new ActionConfig(action, { parent: this, index }).render(true);
+            this.actionconfig = await new ActionConfig({ action, parent: this, index }).render(true);
         }
 
-        _editAction(event) {
-            let item = event.currentTarget.closest('.item');
-            let action = this.actions.find(obj => obj.id == item.dataset.id);
+        static async _editAction(event, target) {
+            let item = target.closest('.action');
+            let action = this.actions.find(obj => obj.id == item.dataset.actionId);
             if (action != undefined)
-                this.actionconfig = new ActionConfig(action, { parent: this }).render(true);
+                this.actionconfig = await new ActionConfig({ action, parent: this }).render(true);
         }
 
-        _deleteAction(event) {
-            let item = event.currentTarget.closest('.item');
-            this.deleteAction(item.dataset.id);
+        static _deleteAction(event, target) {
+            let item = target.closest('.action');
+            this.deleteAction(item.dataset.actionId);
         }
 
         deleteAction(id) {
             let actions = foundry.utils.duplicate(this.actions);
             actions.findSplice(i => i.id == id);
-            foundry.utils.mergeObject(this.object.flags, {
+            foundry.utils.mergeObject(this.document.flags, {
                 "monks-active-tiles": { actions: actions }
             });
-            //this.object.setFlag("monks-active-tiles", "actions", actions);
-            $(`li[data-id="${id}"]`, this.element).remove();
+            //this.document.setFlag("monks-active-tiles", "actions", actions);
+            $(`li[data-action-id="${id}"]`, this.element).remove();
             this.setPosition({ height: 'auto' });
         }
 
         _stopSound(event) {
-            let id = event.currentTarget.closest('.item').dataset.id;
-            if (this.object.soundeffect[id]) {
-                this.object.soundeffect[id].stop();
-                delete this.object.soundeffect[id];
+            let id = event.currentTarget.closest('.sound').dataset.soundId;
+            if (this.document.soundeffect[id]) {
+                this.document.soundeffect[id].stop();
+                delete this.document.soundeffect[id];
             }
             MonksActiveTiles.emit('stopsound', {
-                tileid: this.object.uuid,
+                tileid: this.document.uuid,
                 type: 'tile',
                 userId: null,
                 actionid: id
@@ -621,10 +721,10 @@ export const WithActiveTileConfig = (TileConfig) => {
             let clone = foundry.utils.duplicate(action);
             clone.id = makeid();
             actions.splice(idx + 1, 0, clone);
-            //if (this.object.id) {
-            //    this.object.setFlag("monks-active-tiles", "actions", actions);
+            //if (this.document.id) {
+            //    this.document.setFlag("monks-active-tiles", "actions", actions);
             //} else {
-            foundry.utils.setProperty(this.object, "flags.monks-active-tiles.actions", actions);
+            foundry.utils.setProperty(this.document, "flags.monks-active-tiles.actions", actions);
             this.render();
             //}
         }
@@ -642,7 +742,7 @@ export const WithActiveTileConfig = (TileConfig) => {
         }
 
         resetPerToken() {
-            this.object.resetPerToken();
+            this.document.resetPerToken();
         }
 
         _getContextOptions() {
@@ -652,9 +752,9 @@ export const WithActiveTileConfig = (TileConfig) => {
                     icon: '<i class="far fa-objects-align-top"></i>',
                     condition: () => game.user.isGM,
                     callback: elem => {
-                        let li = $(elem).closest('.item');
+                        let li = $(elem).closest('.action');
                         let idx = li.index();
-                        this._createAction.call(this, idx);
+                        ActiveTileConfig._createAction.call(this, null, li, idx);
                     }
                 },
                 {
@@ -662,9 +762,9 @@ export const WithActiveTileConfig = (TileConfig) => {
                     icon: '<i class="far fa-objects-align-bottom"></i>',
                     condition: () => game.user.isGM,
                     callback: elem => {
-                        let li = $(elem).closest('.item');
+                        let li = $(elem).closest('.action');
                         let idx = li.index();
-                        this._createAction.call(this, idx + 1);
+                        ActiveTileConfig._createAction.call(this, null, li, idx + 1);
                     }
                 },
                 {
@@ -672,8 +772,8 @@ export const WithActiveTileConfig = (TileConfig) => {
                     icon: '<i class="far fa-copy"></i>',
                     condition: () => game.user.isGM,
                     callback: elem => {
-                        let li = $(elem).closest('.item');
-                        const id = li.data("id");
+                        let li = elem.closest('.action');
+                        const id = li.dataset.actionId;
                         return this.cloneAction(id);
                     }
                 },
@@ -682,14 +782,18 @@ export const WithActiveTileConfig = (TileConfig) => {
                     icon: '<i class="fas fa-trash"></i>',
                     condition: () => game.user.isGM,
                     callback: elem => {
-                        let li = $(elem).closest('.item');
-                        const id = li.data("id");
-                        Dialog.confirm({
-                            title: `${game.i18n.localize("SIDEBAR.Delete")} action`,
+                        let li = elem.closest('.action');
+                        const id = li.dataset.actionId;;
+                        foundry.applications.api.DialogV2.confirm({
+                            window: {
+                                title: `${game.i18n.localize("SIDEBAR.Delete")} action`,
+                            },
                             content: game.i18n.format("SIDEBAR.DeleteWarning", { type: 'action' }),
-                            yes: this.deleteAction.bind(this, id),
+                            yes: {
+                                callback: this.deleteAction.bind(this, id)
+                            },
                             options: {
-                                top: Math.min(li[0].offsetTop, window.innerHeight - 350),
+                                top: Math.min(li.offsetTop, window.innerHeight - 350),
                                 left: window.innerWidth - 720
                             }
                         });

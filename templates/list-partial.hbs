@@ -1,0 +1,11 @@
+{{#each options as |option|}}
+{{#if option.group}}
+<optgroup label="{{option.label}}">
+    {{#each option.items as |item|}}
+    <option value="{{item.value}}" {{#if item.selected}} selected{{/if}}{{#if item.custom}} custom="true" {{/if}}>{{item.label}}</option>
+    {{/each}}
+</optgroup>
+{{else}}
+<option value="{{option.value}}" {{#if option.selected}} selected{{/if}}{{#if option.custom}} custom="true" {{/if}}>{{option.label}}</option>
+{{/if}}
+{{/each}}

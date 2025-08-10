@@ -201,7 +201,7 @@ export class MonksActiveTiles {
                 let triggers = MonksActiveTiles.getTrigger(triggerData?.trigger);
                 if (triggers.includes("ready"))
                     MonksActiveTiles.tileTriggerCache["ready"].push(tile);
-                if (triggers.includes("hoverin") || triggers.includes("hoverout"))
+                if (triggers.includes("hoverin") || triggers.includes("hoverout") || triggerData.pointer)
                     MonksActiveTiles.tileTriggerCache["hover"].push(tile);
                 if (triggers.includes("time"))
                     MonksActiveTiles.tileTriggerCache["time"].push(tile);
@@ -488,7 +488,7 @@ export class MonksActiveTiles {
                 return owners;
             }
         }
-        let players = forId instanceof Array ? forId : typeof forId == "string" ? forId.split(",") : [];
+        let players = forId instanceof Array ? forId : (typeof forId == "string" ? forId.split(",") : [forId]);
         return players.map(p => p.id || p);
     }
 
@@ -512,7 +512,7 @@ export class MonksActiveTiles {
             case "owner":
                 return i18n("MonksActiveTiles.for.owner");
             default:
-                let users = entity instanceof Array ? entity : typeof entity == "string" ? entity.split(",") : [];
+                let users = entity instanceof Array ? entity : (typeof entity == "string" ? entity.split(",") : [entity]);
                 if (users.length > 1)
                     return i18n("MonksActiveTiles.MultiplePlayers", { players: users.length });
                 else if (users.length == 1)
@@ -707,7 +707,7 @@ export class MonksActiveTiles {
                         if (document.parent && document.parent instanceof Playlist) {
                             name = document.parent.name + ": " + name;
                         } else if (document.compendium) {
-                            name = `<i class="fas fa-atlas"></i> ${document.compendium.metadata.label}: ${name}`;
+                            name = `<i class="fas fa-atlas" data-tooltip="From compendium"></i> ${document.compendium.metadata.label}: ${name}`;
                         }
                     } else {
                         if (game.modules.get('tagger')?.active) {
@@ -922,7 +922,7 @@ export class MonksActiveTiles {
                 }
             }
         } else {
-            name = foundry.utils.isEmpty(_location) ? "" : `[${_location.x},${_location.y}${(_location.scale ? `, scale:${_location.scale}` : '')}]`;
+            name = foundry.utils.isEmpty(_location) ? "" : `[x:${_location.x} y:${_location.y}${(_location.scale ? ` scale:${_location.scale?.toFixed(2) }` : '')}]`;
         }
 
         let scene = game.scenes.find(s => s.id == sceneId);
@@ -987,7 +987,7 @@ export class MonksActiveTiles {
         }
 
         // Lastly test special detection modes for vision sources
-        if (!(object instanceof Token)) return false;   // Special detection modes can only detect tokens
+        if (!(object instanceof foundry.canvas.placeables.Token)) return false;   // Special detection modes can only detect tokens
         for (const visionSource of canvas.effects.visionSources.values()) {
             if (!visionSource.active) continue;
             // Skip sources that are not both inside the scene or both inside the buffer
@@ -1237,19 +1237,16 @@ export class MonksActiveTiles {
                 close: () => {
                     return;
                 },
-                buttons: {
-                    yes: {
+                buttons: [
+                    {
                         icon: '<i class="fas fa-check"></i>',
                         label: game.i18n.localize("Yes"),
-                        callback: (html) => {
+                        callback: (event, button) => {
                             let data = {};
 
-                            const form = html[0].querySelector("form");
-                            if (form) {
-                                const fd = new FormDataExtended(form);
-                                data = foundry.utils.mergeObject(data, fd.object);
-                                context.value = foundry.utils.mergeObject(context.value, fd.object);
-                            }
+                            const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
+                            data = foundry.utils.mergeObject(data, fd);
+                            context.value = foundry.utils.mergeObject(context.value, fd);
 
                             if (yes) {
                                 if (yes.includes("{{")) {
@@ -1265,18 +1262,15 @@ export class MonksActiveTiles {
                             return data;
                         }
                     },
-                    no: {
+                    {
                         icon: '<i class="fas fa-times"></i>',
                         label: game.i18n.localize("No"),
-                        callback: (html) => {
+                        callback: (event, button) => {
                             let data = {}
 
-                            const form = html[0].querySelector("form");
-                            if (form) {
-                                const fd = new FormDataExtended(form);
-                                data = foundry.utils.mergeObject(data, fd.object);
-                                context.value = foundry.utils.mergeObject(context.value, fd.object);
-                            }
+                            const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
+                            data = foundry.utils.mergeObject(data, fd);
+                            context.value = foundry.utils.mergeObject(context.value, fd);
 
                             if (no) {
                                 if (no.includes("{{")) {
@@ -1292,20 +1286,17 @@ export class MonksActiveTiles {
                             return data;
                         }
                     }
-                }
+                ]
             },
             options,
             ).catch(() => {
                 return closeNo ? { goto: no } : {};
             });
         } else if (type == 'alert') {
-            let callback = (html) => {
+            let callback = (event, button) => {
                 let data = {};
-                const form = html[0].querySelector("form");
-                if (form) {
-                    const fd = new FormDataExtended(form);
-                    data = foundry.utils.mergeObject(data, fd.object);
-                }
+                const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
+                data = foundry.utils.mergeObject(data, fd);
 
                 return data;
             };
@@ -1318,53 +1309,47 @@ export class MonksActiveTiles {
                 close: () => {
                     return;
                 },
-                buttons: {
-                    ok: { icon: '<i class="fas fa-check"></i>', label: "OK", callback }
-                }
+                buttons: [
+                    { icon: '<i class="fas fa-check"></i>', label: "OK", callback }
+                ]
             }, options).catch(() => { return {}; });
         } else {
             let _html;
             let _submit = false;
             return MonksActiveTiles.createDialog(id, {
                 title, content, id,
-                close: () => {
+                close: (event) => {
                     let data = {};
 
                     if (_submit) {
-                        const form = _html[0].querySelector("form");
-                        if (form) {
-                            const fd = new FormDataExtended(form);
-                            data = foundry.utils.mergeObject(data, fd.object);
-                        }
+                        const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
+                        data = foundry.utils.mergeObject(data, fd);
                     }
                     return data;
                 },
-                render: (html) => {
-                    _html = html;
-                    $(html).on("submit", (evt) => {
+                render: (event, dialog) => {
+                    _html = dialog;
+                    $(dialog).on("submit", (evt) => {
                         _submit = true;
                         $('.window-header a.close', $(evt.currentTarget).closest('.app.dialog')).click();
                     });
                     $('.dialog-buttons').addClass("flexrow");
                 },
-                buttons: buttons.reduce((a, v) => ({
-                    ...a, [v.id]: {
-                        label: v.name, callback: (html) => {
+                buttons: buttons.map(b => ({
+                    label: b.name,
+                    callback: (event, button) => {
                             let data = {};
 
-                            const form = html[0].querySelector("form");
-                            if (form) {
-                                const fd = new FormDataExtended(form);
-                                data = foundry.utils.mergeObject(data, fd.object);
-                                context.value = foundry.utils.mergeObject(context.value, fd.object);
-                            }
+                            const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
+                            data = foundry.utils.mergeObject(data, fd);
+                            context.value = foundry.utils.mergeObject(context.value, fd);
 
-                            if (v.goto) {
-                                if (v.goto.includes("{{")) {
-                                    const compiled = Handlebars.compile(v.goto);
+                            if (b.goto) {
+                                if (b.goto.includes("{{")) {
+                                    const compiled = Handlebars.compile(b.goto);
                                     data.goto = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
                                 } else
-                                    data.goto = v.goto;
+                                    data.goto = b.goto;
                             }
 
                             if (!data.goto)
@@ -1372,8 +1357,7 @@ export class MonksActiveTiles {
 
                             return data;
                         }
-                    }
-                }), {})
+                }))
             }, options);
         }
     }
@@ -1405,7 +1389,7 @@ export class MonksActiveTiles {
             options.classes.push("monks-active-tiles-dialog");
 
             // Construct the dialog.
-            const dialog = new Dialog({ ...data, buttons, close }, options);
+            const dialog = new foundry.applications.api.DialogV2({ ...data, buttons, close }, options);
             dialog.render(true, renderOptions);
             MonksActiveTiles._dialogs[id] = dialog;
         });
@@ -1430,7 +1414,7 @@ export class MonksActiveTiles {
         //load all the files
         let sprites = [];
         for (let f of files) {
-            let tex = await loadTexture(f);
+            let tex = await foundry.canvas.loadTexture(f);
             sprites.push(new PIXI.Sprite(tex));
         }
 
@@ -1456,7 +1440,7 @@ export class MonksActiveTiles {
             return;
 
         //run the animation
-        return CanvasAnimation._animatePromise(
+        return foundry.canvas.animation.CanvasAnimation._animatePromise(
             MonksActiveTiles.slotAnimate,
             t,
             `slot-machine${entity.id}`,
@@ -1521,11 +1505,11 @@ export class MonksActiveTiles {
             alpha: (entity.document.hidden ? (game.user.isGM ? 0.5 : 0) : entity.document.alpha ?? 1),
             hidden: entity.document.hidden
         };
-        if (entity instanceof Drawing || entity instanceof Tile) {
+        if (entity instanceof foundry.canvas.placeables.Drawing || entity instanceof foundry.canvas.placeables.Tile) {
             to.x += ((entity.document.width || entity.document.shape?.width || 0) / 2);
             to.y += ((entity.document.height || entity.document.shape?.height || 0) / 2);
         }
-        //await CanvasAnimation.terminateAnimation(`${entity.document.documentName}.${entity.id}.animateEntity`);
+        //await foundry.canvas.animation.CanvasAnimation.terminateAnimation(`${entity.document.documentName}.${entity.id}.animateEntity`);
 
         let duration = (animation.time - new Date().getTime()) ?? animation.duration;
         if (isNaN(duration) || duration < 0) {
@@ -1573,7 +1557,7 @@ export class MonksActiveTiles {
         // Dispatch the animation function
         for (let [key, attributes] of Object.entries(animations)) {
             let animationName = `${entity.document.documentName}.${entity.id}.animate${key}`;
-            CanvasAnimation.animate(attributes, {
+            foundry.canvas.animation.CanvasAnimation.animate(attributes, {
                 name: animationName,
                 context: object,
                 duration: duration,
@@ -1585,7 +1569,7 @@ export class MonksActiveTiles {
                         foundry.utils.setProperty(entity, `_animationAttributes.${attribute.attribute}`, realval)
                         if (attribute.attribute == "alpha" && to.hidden === true && !game.user.isGM && !attribute.parent.visible)
                             attribute.parent.object.visible = true;
-                        if (attribute.parent instanceof AmbientLight) {
+                        if (attribute.parent instanceof foundry.canvas.placeables.AmbientLight) {
                             attribute.parent.document[attribute.attribute] = realval;
                             attribute.parent.initializeLightSource({ deleted: false });
                             //attribute.parent.updateSource();
@@ -1609,7 +1593,7 @@ export class MonksActiveTiles {
         let icon = entity.object.mesh || entity.shape;
         let animationName = `MonksActiveTiles.${entity.documentName}.${entity.id}.animateShowHide`;
 
-        await CanvasAnimation.terminateAnimation(animationName);
+        await foundry.canvas.animation.CanvasAnimation.terminateAnimation(animationName);
 
         if (!hide) {
             icon.alpha = (game.user.isGM ? icon.alpha : 0);
@@ -1634,7 +1618,7 @@ export class MonksActiveTiles {
             return new Promise((resolve) => { resolve(); });
         }
 
-        return CanvasAnimation.animate(attributes, {
+        return foundry.canvas.animation.CanvasAnimation.animate(attributes, {
             name: animationName,
             context: icon,
             duration: duration,
@@ -1691,7 +1675,7 @@ export class MonksActiveTiles {
 
         let animationName = `MonksActiveTiles.${entity.documentName}.${entity.id}.animateTransitionImage`;
 
-        //await CanvasAnimation.terminateAnimation(animationName);
+        //await foundry.canvas.animation.CanvasAnimation.terminateAnimation(animationName);
         if (t._transition) {
             //log("Previous transition", t._transition_to);
             canvas.primary.removeChild(t._transition);
@@ -1745,11 +1729,11 @@ export class MonksActiveTiles {
 
         if (!t._textures[from]) {
             try {
-                fromTex = await loadTexture(from);
+                fromTex = await foundry.canvas.loadTexture(from);
             } catch { }
             if (!fromTex) {
                 console.warn(`Transition texture [from] invalid, ${from}`);
-                fromTex = await loadTexture("/modules/monks-active-tiles/img/1x1.png");
+                fromTex = await foundry.canvas.loadTexture("/modules/monks-active-tiles/img/1x1.png");
             } else
                 t._textures[from] = fromTex;
         } else
@@ -1757,11 +1741,11 @@ export class MonksActiveTiles {
         
         if (!t._textures[to]) {
             try {
-                toTex = await loadTexture(to);
+                toTex = await foundry.canvas.loadTexture(to);
             } catch { }
             if (!toTex) {
                 console.warn(`Transition texture [to] invalid, ${to}`);
-                toTex = await loadTexture("/modules/monks-active-tiles/img/1x1.png");
+                toTex = await foundry.canvas.loadTexture("/modules/monks-active-tiles/img/1x1.png");
             } else
                 t._textures[to] = toTex;
         } else
@@ -1866,11 +1850,11 @@ export class MonksActiveTiles {
         window.setTimeout(() => {
             if (t._transition && transitionId == t._transition_id) {
                 //log("Transition timed out", transitionId, t._transition_id, to);
-                CanvasAnimation.terminateAnimation(animationName);
+                foundry.canvas.animation.CanvasAnimation.terminateAnimation(animationName);
             }
         }, duration + 100);
 
-        return CanvasAnimation.animate(attributes, {
+        return foundry.canvas.animation.CanvasAnimation.animate(attributes, {
             name: animationName,
             context: t,
             duration: duration,
@@ -1881,7 +1865,7 @@ export class MonksActiveTiles {
             }
         }).then(() => {
             //log("Transition finished", t._transition_to);
-            CanvasAnimation.terminateAnimation(animationName);
+            foundry.canvas.animation.CanvasAnimation.terminateAnimation(animationName);
             let result = t._transition_to;
             let transitionId = t._transition_id;
             canvas.tiles.removeChild(t._transition);
@@ -1916,10 +1900,10 @@ export class MonksActiveTiles {
         if (img) {
             if (!t._textures[img]) {
                 try {
-                    tex = await loadTexture(img);
+                    tex = await foundry.canvas.loadTexture(img);
                 } catch { }
                 if (!tex) {
-                    tex = await loadTexture("/modules/monks-active-tiles/img/1x1.png");
+                    tex = await foundry.canvas.loadTexture("/modules/monks-active-tiles/img/1x1.png");
                 } else
                     t._textures[img] = tex;
             } else
@@ -1985,7 +1969,7 @@ export class MonksActiveTiles {
 
         let wallCollide = function (ray) {
             for (let wall of scene.walls) {
-                if (lineSegmentIntersects(ray.A, ray.B, { x: wall.c[0], y: wall.c[1] }, { x: wall.c[2], y: wall.c[3] }))
+                if (foundry.utils.lineSegmentIntersects(ray.A, ray.B, { x: wall.c[0], y: wall.c[1] }, { x: wall.c[2], y: wall.c[3] }))
                     return true;
             }
             return false
@@ -2007,7 +1991,7 @@ export class MonksActiveTiles {
         for (let x = rect.x; x <= rect.x + Math.abs(rect.width); x += scene.dimensions.size) {
             for (let y = rect.y; y <= rect.y + Math.abs(rect.height); y += scene.dimensions.size) {
                 let spot = { x: x + offset.x, y: y + offset.y };
-                let wallRes = wallCollide(new Ray({ x: pos.x, y: pos.y }, { x: spot.x + (tokenWidth / 2), y: spot.y + (tokenHeight / 2) }));
+                let wallRes = wallCollide(new foundry.canvas.geometry.Ray({ x: pos.x, y: pos.y }, { x: spot.x + (tokenWidth / 2), y: spot.y + (tokenHeight / 2) }));
                 let tileRes = outsideTile(spot);
                 if (!wallRes && !tileRes)
                     positions.push(spot);
@@ -2133,12 +2117,13 @@ export class MonksActiveTiles {
         let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
         if (waitingType == 'location' || waitingType == 'either' || waitingType == 'position') {
             let restrict = MonksActiveTiles.waitingInput.waitingfield.data('restrict');
-            if (restrict && !restrict(canvas.scene)) {
+            let tileDocument = MonksActiveTiles.waitingInput.options.parent.options.document;
+            if (restrict && !restrict(canvas.scene, tileDocument)) {
                 ui.notifications.error(i18n("MonksActiveTiles.msg.invalid-location"));
                 return;
             }
             let pos = canvas.activeLayer.toLocal(event);
-            let update = { x: parseInt(pos.x), y: parseInt(pos.y), sceneId: (canvas.scene.id != MonksActiveTiles.waitingInput.options.parent.object.parent.id ? canvas.scene.id : null) };
+            let update = { x: parseInt(pos.x), y: parseInt(pos.y), sceneId: (canvas.scene.id != tileDocument.parent.id ? canvas.scene.id : null) };
             ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, update, event);
         }
     }
@@ -2146,7 +2131,7 @@ export class MonksActiveTiles {
     static canvasClick = function (event, clicktype) {
         if (clicktype == "click")
             MonksActiveTiles.selectClick(event);
-        if (canvas.activeLayer instanceof TokenLayer) {
+        if (canvas.activeLayer instanceof foundry.canvas.layers.TokenLayer) {
             //check to see if there are any Tiles that can be activated with a click
             let pt = canvas.activeLayer.toLocal(event);
             if (isNaN(pt.x) || isNaN(pt.y))
@@ -2255,7 +2240,15 @@ export class MonksActiveTiles {
             "monks-active-tiles.triggerTile": TriggerTileRegionBehavior,
         });
 
-        patchFunc("TextEditor.prototype.constructor.truncateText", function (wrapped, ...args) {
+        patchFunc("foundry.applications.sheets.WallConfig.prototype._prepareSubmitData", function (wrapped, ...args) {
+            let submitData = wrapped(...args);
+            let value = $('[name="flags.monks-active-tiles.entity"]', this.element).data("value");
+            foundry.utils.setProperty(submitData, "flags.monks-active-tiles.entity", value);
+
+            return submitData;
+        });
+
+        patchFunc("foundry.applications.ux.TextEditor.prototype.constructor.truncateText", function (wrapped, ...args) {
             let [text, options] = args;
             if (text == undefined) {
                 args[0] = "";
@@ -2272,13 +2265,13 @@ export class MonksActiveTiles {
                         if (game.modules.get('tagger')?.active) {
                             let tags = Tagger.getTags(document);
                             if (tags.length)
-                                name = tags[0];
+                                label = tags[0];
                         }
 
-                        if (!name)
-                            name = document.documentName + ": " + document.id;
+                        if (!label)
+                            label = document.documentName + ": " + document.id;
 
-                        args[1] = name;
+                        args[1] = label;
                     }
                 } catch { }
             }
@@ -2298,19 +2291,19 @@ export class MonksActiveTiles {
         //MonksActiveTiles.triggerActions = Object.assign(otherTriggers, MonksActiveTiles.triggerActions);
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.ignore_conflicts("monks-active-tiles", "monks-enhanced-journal", "JournalDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "ItemDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "JournalDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "ActorDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "RollTableDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "SceneDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "MacroDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "Compendium.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "monks-common-display", "ActorDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "monks-scene-navigation", "SceneDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "df-scene-enhance", "SceneDirectory.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "monks-enhanced-journal", "Compendium.prototype._onClickEntryName");
-            libWrapper.ignore_conflicts("monks-active-tiles", "monks-little-details", "TilesLayer.prototype._onDropData");
+            libWrapper.ignore_conflicts("monks-active-tiles", "monks-enhanced-journal", "foundry.applications.sidebar.tabs.JournalDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.tabs.ItemDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.tabs.JournalDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.tabs.ActorDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.tabs.RollTableDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.tabs.SceneDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.tabs.MacroDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "multiple-document-selection", "foundry.applications.sidebar.apps.Compendium.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "monks-common-display", "foundry.applications.sidebar.tabs.ActorDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "monks-scene-navigation", "foundry.applications.sidebar.tabs.SceneDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "df-scene-enhance", "foundry.applications.sidebar.tabs.SceneDirectory.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "monks-enhanced-journal", "foundry.applications.sidebar.apps.Compendium.prototype._onClickEntry");
+            libWrapper.ignore_conflicts("monks-active-tiles", "monks-little-details", "foundry.canvas.layers.TilesLayer.prototype._onDropData");
         }
 
         MonksActiveTiles.SOCKET = "module.monks-active-tiles";
@@ -2395,17 +2388,17 @@ export class MonksActiveTiles {
             return result;
         }
 
-        patchFunc("Tile.prototype._onUpdate", entityOnUpdate);
-        patchFunc("Drawing.prototype._onUpdate", entityOnUpdate);
-        patchFunc("AmbientLight.prototype._onUpdate", entityOnUpdate);
-        patchFunc("AmbientSound.prototype._onUpdate", entityOnUpdate);
-        patchFunc("Note.prototype._onUpdate", entityOnUpdate);
+        patchFunc("foundry.canvas.placeables.Tile.prototype._onUpdate", entityOnUpdate);
+        patchFunc("foundry.canvas.placeables.Drawing.prototype._onUpdate", entityOnUpdate);
+        patchFunc("foundry.canvas.placeables.AmbientLight.prototype._onUpdate", entityOnUpdate);
+        patchFunc("foundry.canvas.placeables.AmbientSound.prototype._onUpdate", entityOnUpdate);
+        patchFunc("foundry.canvas.placeables.Note.prototype._onUpdate", entityOnUpdate);
         /*
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "Tile.prototype._onUpdate", tileOnUpdate, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.Tile.prototype._onUpdate", tileOnUpdate, "WRAPPER");
         } else {
-            const oldOnUpdate = Tile.prototype._onUpdate;
-            Tile.prototype._onUpdate = function (event) {
+            const oldOnUpdate = foundry.canvas.placeables.Tile.prototype._onUpdate;
+            foundry.canvas.placeables.Tile.prototype._onUpdate = function (event) {
                 return tileOnUpdate.call(this, oldOnUpdate.bind(this), ...arguments);
             }
         }*/
@@ -2423,7 +2416,7 @@ export class MonksActiveTiles {
             return wrapped(...args);
         }
 
-        patchFunc("TokenLayer.prototype.releaseAll", releaseAll);
+        patchFunc("foundry.canvas.layers.TokenLayer.prototype.releaseAll", releaseAll);
 
         let onDropData = async function (wrapper, ...args) {
             const [event, data] = args;
@@ -2454,7 +2447,7 @@ export class MonksActiveTiles {
                 return wrapper(...args);
         }
 
-        patchFunc("TilesLayer.prototype._onDropData", onDropData, "MIXED");
+        patchFunc("foundry.canvas.layers.TilesLayer.prototype._onDropData", onDropData, "MIXED");
 
         let tileCreatePreview = function (wrapped, ...args) {
             let data = args[0];
@@ -2479,31 +2472,38 @@ export class MonksActiveTiles {
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "Tile.prototype.constructor.createPreview", tileCreatePreview, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.Tile.prototype.constructor.createPreview", tileCreatePreview, "WRAPPER");
         } else {
-            const oldTileCreatePreview = Tile.prototype.constructor.createPreview;
-            Tile.prototype.constructor.createPreview = function (event) {
+            const oldTileCreatePreview = foundry.canvas.placeables.Tile.prototype.constructor.createPreview;
+            foundry.canvas.placeables.Tile.prototype.constructor.createPreview = function (event) {
                 return tileCreatePreview.call(this, oldTileCreatePreview.bind(this), ...arguments);
             }
         }
 
-        let clickMacro = function (wrapped, ...args) {
+        foundry.applications.ui.Hotbar.prototype.constructor.DEFAULT_OPTIONS.actions.execute = async function (event) {
+            let getMacroForSlot = (element) => {
+                const slot = element.dataset.slot;
+                const macroId = game.user.hotbar[slot];
+                if (!macroId) return null;
+                return game.macros.get(macroId) ?? null;
+            }
+            const macro = getMacroForSlot(event.target);
+
             let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
             if (waitingType == 'entity') {
-                let event = args[0];
-                const macroId = $(event.currentTarget).closest('.macro').data('macroId');
-                let macro = game.macros.get(macroId);
-                MonksActiveTiles.controlEntity(macro);
-            } else
-                return wrapped(...args);
-        }
+                if (macro)
+                    MonksActiveTiles.controlEntity(macro);
+            } else {
+                // Execute a Macro
+                if (macro) await macro?.execute();
 
-        if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "Hotbar.prototype._onClickMacro", clickMacro, "MIXED");
-        } else {
-            const oldClickMacro = Hotbar.prototype._onClickMacro;
-            Hotbar.prototype._onClickMacro = function (event) {
-                return clickMacro.call(this, oldClickMacro.bind(this), ...arguments);
+                // Create a temporary Macro
+                else {
+                    const cls = getDocumentClass$1("Macro");
+                    const macro = new cls({ name: cls.defaultName({ type: "chat" }), type: "chat", scope: "global" });
+                    const hotbarSlot = event.target.dataset.slot;
+                    await macro.sheet.render({ force: true, hotbarSlot });
+                }
             }
         }
 
@@ -2531,10 +2531,10 @@ export class MonksActiveTiles {
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "Tile.prototype.draw", tileDraw, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.Tile.prototype.draw", tileDraw, "WRAPPER");
         } else {
-            const oldTileDraw = Tile.prototype.draw;
-            Tile.prototype.draw = function (event) {
+            const oldTileDraw = foundry.canvas.placeables.Tile.prototype.draw;
+            foundry.canvas.placeables.Tile.prototype.draw = function (event) {
                 return tileDraw.call(this, oldTileDraw.bind(this), ...arguments);
             }
         }
@@ -2551,16 +2551,16 @@ export class MonksActiveTiles {
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "Token.prototype.draw", tokenDraw, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.Token.prototype.draw", tokenDraw, "WRAPPER");
         } else {
-            const oldTokenDraw = Token.prototype.draw;
-            Token.prototype.draw = function (event) {
+            const oldTokenDraw = foundry.canvas.placeables.Token.prototype.draw;
+            foundry.canvas.placeables.Token.prototype.draw = function (event) {
                 return tokenDraw.call(this, oldTokenDraw.bind(this), ...arguments);
             }
         }
 
-        let oldCycleTokens = TokenLayer.prototype.cycleTokens;
-        TokenLayer.prototype.cycleTokens = function (...args) {
+        let oldCycleTokens = foundry.canvas.layers.TokenLayer.prototype.cycleTokens;
+        foundry.canvas.layers.TokenLayer.prototype.cycleTokens = function (...args) {
             //if (MonksActiveTiles.preventCycle) {
             if(setting('prevent-cycle'))
                 return null;
@@ -2699,8 +2699,8 @@ export class MonksActiveTiles {
             }
         }
 
-        patchFunc("DoorControl.prototype._onMouseDown", doorControl, "WRAPPER");
-        //patchFunc("DoorControl.prototype._onRightDown", doorControl, "WRAPPER");
+        patchFunc("foundry.canvas.containers.DoorControl.prototype._onMouseDown", doorControl, "WRAPPER");
+        //patchFunc("foundry.canvas.containers.DoorControl.prototype._onRightDown", doorControl, "WRAPPER");
 
         let playlistCollapse = function (wrapped, ...args) {
             let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
@@ -2714,7 +2714,7 @@ export class MonksActiveTiles {
                 return wrapped(...args);
         }
 
-        patchFunc("PlaylistDirectory.prototype._onClickEntryName", playlistCollapse, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.PlaylistDirectory.prototype._onClickEntry", playlistCollapse, "MIXED");
 
         let lastPosition = undefined;
         MonksActiveTiles.hoveredTiles = new Set();
@@ -2733,7 +2733,7 @@ export class MonksActiveTiles {
             if (!canvas.scene)
                 return;
 
-            if (!(canvas.activeLayer instanceof TokenLayer))
+            if (!(canvas.activeLayer instanceof foundry.canvas.layers.TokenLayer))
                 return;
 
             let hasPointer = $('#board').css('cursor') == "pointer";
@@ -2841,22 +2841,22 @@ export class MonksActiveTiles {
             wrapped(...args);
         }
         
-        patchFunc("TokenLayer.prototype._onClickLeft", _onLeftClick);
-        patchFunc("TokenLayer.prototype._onClickRight", _onRightClick);
-        patchFunc("TokenLayer.prototype._onClickLeft2", _onLeftClick2);
-        patchFunc("TokenLayer.prototype._onClickRight2", _onRightClick2);
+        patchFunc("foundry.canvas.layers.TokenLayer.prototype._onClickLeft", _onLeftClick);
+        patchFunc("foundry.canvas.layers.TokenLayer.prototype._onClickRight", _onRightClick);
+        patchFunc("foundry.canvas.layers.TokenLayer.prototype._onClickLeft2", _onLeftClick2);
+        patchFunc("foundry.canvas.layers.TokenLayer.prototype._onClickRight2", _onRightClick2);
 
-        for (let layer of ["TilesLayer", "DrawingsLayer", "WallsLayer", "LightingLayer", "SoundsLayer", "RegionLayer", "NotesLayer"]) {
+        for (let layer of ["foundry.canvas.layers.TilesLayer", "foundry.canvas.layers.DrawingsLayer", "foundry.canvas.layers.WallsLayer", "foundry.canvas.layers.LightingLayer", "foundry.canvas.layers.SoundsLayer", "foundry.canvas.layers.RegionLayer", "foundry.canvas.layers.NotesLayer"]) {
             patchFunc(`${layer}.prototype._onClickLeft`, _onLeftClick, "MIXED");
         }
 
-        patchFunc("TilesLayer.prototype._deactivate", function (wrapper, ...args) {
+        patchFunc("foundry.canvas.layers.TilesLayer.prototype._deactivate", function (wrapper, ...args) {
             wrapper(...args);
             const showImageless = setting("show-imageless") && game.user.isGM;
             this.objects.visible = showImageless;
         })
 
-        patchFunc("TilesLayer.prototype._draw", async function (wrapper, ...args) {
+        patchFunc("foundry.canvas.layers.TilesLayer.prototype._draw", async function (wrapper, ...args) {
             await wrapper(...args);
             const showImageless = setting("show-imageless") && game.user.isGM;
             this.objects.visible ||= showImageless;
@@ -2867,11 +2867,12 @@ export class MonksActiveTiles {
             let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
             if (waitingType == 'entity') { //+++ need to make sure this is allowed, only create should be able to select templates
                 event.preventDefault();
-                const documentId = event.currentTarget.closest(".document").dataset.documentId;
-                const document = this.constructor.collection.get(documentId);
+                const documentId = event.target.closest(".document").dataset.entryId;
+                const document = this.collection.get(documentId);
 
                 let restrict = MonksActiveTiles.waitingInput.waitingfield.data('restrict');
-                if (restrict && !restrict(document))
+                let tileDocument = MonksActiveTiles.waitingInput.options.parent.options.document;
+                if (restrict && !restrict(document, tileDocument))
                     return wrapped(...args);
 
                 ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, { id: document.uuid, name: document.name }, event);
@@ -2879,28 +2880,22 @@ export class MonksActiveTiles {
                 wrapped(...args);
         }
 
-        let checkClickDocumentName = async function (wrapped, ...args) {
-            if (this.constructor.name == "MacroDirectory") {
-                return clickDocumentName.call(this, wrapped.bind(this), ...args);
-            } else
-                return wrapped(...args);
-        }
-
-        patchFunc("ActorDirectory.prototype._onClickEntryName", clickDocumentName, "MIXED");
-        patchFunc("ItemDirectory.prototype._onClickEntryName", clickDocumentName, "MIXED");
-        patchFunc("JournalDirectory.prototype._onClickEntryName", clickDocumentName, "MIXED");
-        patchFunc("SceneDirectory.prototype._onClickEntryName", clickDocumentName, "MIXED");
-        patchFunc("MacroDirectory.prototype._onClickEntryName", clickDocumentName, "MIXED");
-        patchFunc("RollTableDirectory.prototype._onClickEntryName", clickDocumentName, "MIXED");
-        patchFunc("DocumentDirectory.prototype._onClickEntryName", checkClickDocumentName, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.ActorDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.ItemDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.JournalDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.SceneDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.MacroDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("foundry.applications.sidebar.tabs.RollTableDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
 
         let clickCompendiumEntry = async function (wrapped, ...args) {
             let event = args[0];
             if (MonksActiveTiles.waitingInput && MonksActiveTiles.waitingInput.waitingfield.data('type') == 'entity') { //+++ need to make sure this is allowed, only create should be able to select templates
-                let li = event.currentTarget.parentElement;
-                const document = await this.collection.getDocument(li.dataset.documentId);
+                const documentId = event.target.closest(".document").dataset.entryId;
+                const document = await this.collection.getDocument(documentId);
+                let tileDocument = MonksActiveTiles.waitingInput.options.parent.options.document;
                 let restrict = MonksActiveTiles.waitingInput.waitingfield.data('restrict');
-                if (restrict && !restrict(document))
+
+                if (restrict && !restrict(document, tileDocument))
                     return wrapped(...args);
 
                 ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, { id: document.uuid, name: document.name }, event);
@@ -2908,15 +2903,67 @@ export class MonksActiveTiles {
                 wrapped(...args);
         }
 
-        patchFunc("Compendium.prototype._onClickEntryName", clickCompendiumEntry, "MIXED");
+        patchFunc("foundry.helpers.interaction.ClientKeybindings.prototype._registerCoreKeybindings", function (wrapped, ...args) {
+            let result = wrapped(...args);
 
-        patchFunc("ClientKeybindings.constructor.prototype._onDismiss", function (wrapped, ...args) {
-            if (MonksActiveTiles.waitingInput) {
-                ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, null);
-                return false;
-            } else
-                return wrapped(...args);
-        }, "MIXED");
+            game.keybindings.actions.get("core.dismiss").onDown = async function (context) {
+                // Cancel current drag workflow
+                if (canvas.currentMouseManager) {
+                    canvas.currentMouseManager.interactionData.cancelled = true;
+                    canvas.currentMouseManager.cancel();
+                    return true;
+                }
+
+                // Save fog of war if there are pending changes
+                if (canvas.ready) canvas.fog.commit();
+
+                // Case 1 - dismiss an open context menu
+                if (ui.context?.element) {
+                    await ui.context.close();
+                    return true;
+                }
+
+                // Case 2 - dismiss an open Tour
+                if (foundry.nue.Tour.tourInProgress) {
+                    foundry.nue.Tour.activeTour.exit();
+                    return true;
+                }
+
+                // Case 2.5 - dismiss an open ActionConfig
+                if (MonksActiveTiles.waitingInput) {
+                    ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, null);
+                    return true;
+                }
+
+                // Case 3 - close open UI windows
+                const closingApps = [];
+                for (const app of Object.values(ui.windows)) {
+                    closingApps.push(app.close({ closeKey: true }).then(() => !app.rendered));
+                }
+                for (const app of foundry.applications.instances.values()) {
+                    if (app.hasFrame && !app.nonDismissible) closingApps.push(app.close({ closeKey: true }).then(() => !app.rendered));
+                }
+                const closedApp = (await Promise.all(closingApps)).some(c => c); // Confirm an application actually closed
+                if (closedApp) return true;
+
+                // Case 4 (GM) - release controlled objects (if not in a preview)
+                if (game.view !== "game") return;
+                const layer = canvas.activeLayer;
+                if (layer instanceof foundry.canvas.layers.InteractionLayer) {
+                    if (layer._onDismissKey(context.event)) return true;
+                }
+
+                // Case 5 - toggle the main menu
+                ui.menu.toggle();
+                // Save the fog immediately rather than waiting for the 3s debounced save as part of commitFog.
+                if (canvas.ready) await canvas.fog.save();
+                return true;
+            }
+
+            return result
+        });
+
+        patchFunc("foundry.applications.sidebar.apps.Compendium.prototype._onClickEntry", clickCompendiumEntry, "MIXED");
 
         let leftClick = async function (wrapped, ...args) {
             let event = args[0];
@@ -2925,37 +2972,37 @@ export class MonksActiveTiles {
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "AmbientLight.prototype._onClickLeft", leftClick, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.AmbientLight.prototype._onClickLeft", leftClick, "WRAPPER");
         } else {
-            const oldOnClickLeft = AmbientLight.prototype._onClickLeft;
-            AmbientLight.prototype._onClickLeft = function (event) {
+            const oldOnClickLeft = foundry.canvas.placeables.AmbientLight.prototype._onClickLeft;
+            foundry.canvas.placeables.AmbientLight.prototype._onClickLeft = function (event) {
                 return leftClick.call(this, oldOnClickLeft.bind(this), ...arguments);
             }
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "AmbientSound.prototype._onClickLeft", leftClick, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.AmbientSound.prototype._onClickLeft", leftClick, "WRAPPER");
         } else {
-            const oldOnClickLeft = AmbientSound.prototype._onClickLeft;
-            AmbientSound.prototype._onClickLeft = function (event) {
+            const oldOnClickLeft = foundry.canvas.placeables.AmbientSound.prototype._onClickLeft;
+            foundry.canvas.placeables.AmbientSound.prototype._onClickLeft = function (event) {
                 return leftClick.call(this, oldOnClickLeft.bind(this), ...arguments);
             }
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "MeasuredTemplate.prototype._onClickLeft", leftClick, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.MeasuredTemplate.prototype._onClickLeft", leftClick, "WRAPPER");
         } else {
-            const oldOnClickLeft = MeasuredTemplate.prototype._onClickLeft;
-            MeasuredTemplate.prototype._onClickLeft = function (event) {
+            const oldOnClickLeft = foundry.canvas.placeables.MeasuredTemplate.prototype._onClickLeft;
+            foundry.canvas.placeables.MeasuredTemplate.prototype._onClickLeft = function (event) {
                 return leftClick.call(this, oldOnClickLeft.bind(this), ...arguments);
             }
         }
 
         if (game.modules.get("lib-wrapper")?.active) {
-            libWrapper.register("monks-active-tiles", "Note.prototype._onClickLeft", leftClick, "WRAPPER");
+            libWrapper.register("monks-active-tiles", "foundry.canvas.placeables.Note.prototype._onClickLeft", leftClick, "WRAPPER");
         } else {
-            const oldOnClickLeft = Note.prototype._onClickLeft;
-            Note.prototype._onClickLeft = function (event) {
+            const oldOnClickLeft = foundry.canvas.placeables.Note.prototype._onClickLeft;
+            foundry.canvas.placeables.Note.prototype._onClickLeft = function (event) {
                 return leftClick.call(this, oldOnClickLeft.bind(this), ...arguments);
             }
         }
@@ -3016,7 +3063,7 @@ export class MonksActiveTiles {
 
                     // Adjust the ray based on token size
                     const dest = canvas.grid.getTopLeft(r.B.x, r.B.y);
-                    const path = new Ray({ x: token.x, y: token.y }, { x: dest[0] + dx, y: dest[1] + dy });
+                    const path = new foundry.canvas.geometry.Ray({ x: token.x, y: token.y }, { x: dest[0] + dx, y: dest[1] + dy });
 
                     // Commit the movement and update the final resolved destination coordinates
                     let animate = true;
@@ -3580,8 +3627,11 @@ export class MonksActiveTiles {
             } break;
             case 'showimage': {
                 if (data.users.includes(game.user.id)) {
-                    new ImagePopout(data.src, {
-                        title: data.title
+                    new foundry.applications.apps.ImagePopout({
+                        src: data.src,
+                        window: {
+                            title: data.title
+                        }
                     }).render(true);
                 }
             } break;
@@ -3633,7 +3683,7 @@ export class MonksActiveTiles {
                     }
 
                     if (data.asimage && !!entity.src) {
-                        new ImagePopout(entity.src).render(true);
+                        new foundry.applications.apps.ImagePopout({ src: entity.src }).render(true);
                     } else {
                         if (data.enhanced !== true || !game.modules.get("monks-enhanced-journal")?.active || !game.MonksEnhancedJournal.openJournalEntry(entity, { tempOwnership: !data.permission })) {
                             /*if (!data.permission && (!entity.testUserPermission(game.user, "OBSERVER") || (entity.parent && !entity.parent.testUserPermission(game.user, "OBSERVER")))) {
@@ -3692,7 +3742,7 @@ export class MonksActiveTiles {
             case 'target': {
                 if (data.users.includes(game.user.id)) {
                     if(data.target == "target")
-                        game.user.updateTokenTargets(data.tokens);
+                        game.user._onUpdateTokenTargets(data.tokens);
                     else {
                         data.tokens.forEach(id => {
                             let token = canvas.tokens.get(id);
@@ -3761,7 +3811,7 @@ export class MonksActiveTiles {
                                     //load all the files
                                     let sprites = [];
                                     for (let f of files) {
-                                        let tex = await loadTexture(f);
+                                        let tex = await foundry.canvas.loadTexture(f);
                                         sprites.push(new PIXI.Sprite(tex));
                                     }
 
@@ -3796,7 +3846,7 @@ export class MonksActiveTiles {
                                 if (duration < 0)
                                     return;
 
-                                MonksActiveTiles._slotmachine[entity.id].animation = CanvasAnimation._animatePromise(
+                                MonksActiveTiles._slotmachine[entity.id].animation = foundry.canvas.animation.CanvasAnimation._animatePromise(
                                     MonksActiveTiles.slotAnimate,
                                     entity._object,
                                     `slot-machine${entity.id}`,
@@ -3856,7 +3906,7 @@ export class MonksActiveTiles {
 
                         if (t?._transition_ready === false) {
                             let animationName = `MonksActiveTiles.${entity.documentName}.${entity.id}.animateTransitionImage`;
-                            await CanvasAnimation.terminateAnimation(animationName);
+                            await foundry.canvas.animation.CanvasAnimation.terminateAnimation(animationName);
                             if (t?._transition) {
                                 //log("Told to remove transition", t._transition_to);
                                 canvas.primary.removeChild(t._transition);
@@ -3889,11 +3939,13 @@ export class MonksActiveTiles {
             } break;
             case 'openurl': {
                 if (data.userId == game.user.id) {
-                    Dialog.confirm({
+                    foundry.applications.api.DialogV2.confirm({
                         title: "Opening external link",
                         content: "<p>Are you sure you want to open an external link?</p><p>URL: " + data.url + "</p>",
-                        yes: () => {
-                            window.open(data.url, "_target");
+                        yes: {
+                            callback: () => {
+                                window.open(data.url, "_target");
+                            }
                         }
                     });
                 }
@@ -3929,18 +3981,18 @@ export class MonksActiveTiles {
                 t._textures = t._textures || {};
 
                 if (entity._images == undefined) {
-                    entity._images = await MonksActiveTiles.getTileFiles(entity.flags["monks-active-tiles"].files || []);
+                    entity._images = await MonksActiveTiles.getTileFiles(foundry.utils.getProperty(entity, "flags.monks-active-tiles.files") || []);
                 }
 
                 for (let img of entity._images) {
                     let tex;
                     if (!t._textures[img]) {
                         try {
-                            tex = await loadTexture(img);
+                            tex = await foundry.canvas.loadTexture(img);
                         } catch { }
                         if (!tex) {
                             console.warn(`Preload texture invalid, ${img}`);
-                            tex = await loadTexture("/modules/monks-active-tiles/img/1x1.png");
+                            tex = await foundry.canvas.loadTexture("/modules/monks-active-tiles/img/1x1.png");
                         } else
                             t._textures[img] = tex;
                     }
@@ -4168,7 +4220,7 @@ export class MonksActiveTiles {
             });
         }
 
-        Tile.prototype._findTextureBorder_old = function () {
+        foundry.canvas.placeables.Tile.prototype._findTextureBorder_old = function () {
             let findPoint = function (pixels, start) {
                 let pt;
                 let dest = { x: width - start.x, y: height - start.y };
@@ -4342,7 +4394,7 @@ export class MonksActiveTiles {
             */
         }
 
-        Tile.prototype._findTextureBorder = function () {
+        foundry.canvas.placeables.Tile.prototype._findTextureBorder = function () {
             let findStart = function (pixels) {
                 let point;
                 let x = 0;
@@ -4658,7 +4710,7 @@ export class MonksActiveTiles {
             const tokenX2 = destination.x + tokenOffsetW;
             const tokenY2 = destination.y + tokenOffsetH;
 
-            const tokenRay = new Ray(
+            const tokenRay = new foundry.canvas.geometry.Ray(
                 {
                     x: tokenX1 - (this.x + cX),
                     y: tokenY1 - (this.y + cY)
@@ -4893,9 +4945,9 @@ export class MonksActiveTiles {
                     let tokenRay;
                     if (!tokens.length || !["enter", "exit", "movement", "elevation", "rotation"].includes(method)) {
                         let midTile = { x: this.x + (Math.abs(this.width) / 2), y: this.y + (Math.abs(this.height) / 2) };
-                        tokenRay = new Ray({ x: midTile.x, y: midTile.y }, { x: pt.x, y: pt.y });
+                        tokenRay = new foundry.canvas.geometry.Ray({ x: midTile.x, y: midTile.y }, { x: pt.x, y: pt.y });
                     } else {
-                        tokenRay = new Ray({ x: options.src?.x || tokens[0].x, y: options.src?.y || tokens[0].y }, { x: options.original?.x || pt.x, y: options.original?.y || pt.y });
+                        tokenRay = new foundry.canvas.geometry.Ray({ x: options.src?.x || tokens[0].x, y: options.src?.y || tokens[0].y }, { x: options.original?.x || pt.x, y: options.original?.y || pt.y });
                     }
 
                     direction.y = ((tokenRay.angle == 0 || tokenRay.angle == Math.PI) ? "" : (tokenRay.angle < 0 ? "up" : "down"));
@@ -5012,6 +5064,7 @@ export class MonksActiveTiles {
                 debug("Running action", action);
                 context.index = i;
                 context.action = action;
+                delete context.stopmovement;
                 if (resume != undefined)
                     context.tokens = resume.tokens || context.tokens;
                 let fn = trigger.fn;
@@ -5392,50 +5445,6 @@ export class MonksActiveTiles {
         return original;
     }
 
-    static saveTemplate() {
-        Dialog.confirm({
-            title: "Name of Template",
-            content: `
-<form>
-    <div class="form-group">
-        <label for= "name" >Template Name</label >
-        <div class="form-fields">
-            <input type="text" name="name" />
-        </div>
-    </div>
-</form>`,
-            yes: async (html) => {
-                const form = html[0].querySelector("form");
-                if (form) {
-                    const fd = new FormDataExtended(form);
-                    if (!fd.object.name)
-                        return ui.notifications.error("Tile templates require a name");
-
-                    let templates = setting("tile-templates") || [];
-                    let data = this.object.toObject();
-                    data._id = data.id = foundry.utils.randomID();
-                    data.name = fd.object.name;
-                    data.visible = true;
-                    delete data.img;
-                    data.img = data.texture.src;
-                    data.thumbnail = data.img || "modules/monks-active-tiles/img/cube.svg";
-                    if (VideoHelper.hasVideoExtension(data.thumbnail)) {
-                        const t = await ImageHelper.createThumbnail(data.thumbnail, { width: 60, height: 60 });
-                        data.thumbnail = t.thumb;
-                    }
-                    templates.push(data);
-                    game.settings.set("monks-active-tiles", "tile-templates", templates);
-                    ui.notifications.info("Tile information has been saved to Tile Templates.");
-                    new TileTemplates().render(true);
-                }
-            },
-            options: {
-                width: 400
-            }
-        }
-        );
-    }
-
     static async runTriggers(triggeringList, userId) {
         let clearRemainingTriggers = function () {
             for (let trigger of triggeringList) {
@@ -5452,7 +5461,7 @@ export class MonksActiveTiles {
             if (data.stopmovement == "snap") {
                 let snapPoint = { B: foundry.utils.duplicate(endPt) };
                 if (endPt.x != data.dest.x || endPt.y != data.dest.y) 
-                    snapPoint = Ray.towardsPoint(endPt, data.dest, document.parent.dimensions.size / 3);
+                    snapPoint = foundry.canvas.geometry.Ray.towardsPoint(endPt, data.dest, document.parent.dimensions.size / 3);
                 endPt = MonksActiveTiles.getSnappedPosition(snapPoint.B.x, snapPoint.B.y);
                 if (isNaN(endPt.x)) endPt.x = data.pt.x;
                 if (isNaN(endPt.y)) endPt.y = data.pt.y;
@@ -5466,15 +5475,18 @@ export class MonksActiveTiles {
                     MonksActiveTiles.emit('cancelruler', { userId: userId });
                 }
             }
-            let animation = CanvasAnimation.getAnimation(document._object?.animationName);
+            let animation = foundry.canvas.animation.CanvasAnimation.getAnimation(document._object?.animationName + "Movement");
             if (animation) {
+                foundry.canvas.animation.CanvasAnimation.terminateAnimation(document._object?.animationName + "Movement");
                 log("Found animation");
+                /*
                 let x = animation.attributes.find(a => a.attribute == "x");
                 if (x)
                     x.to = endPt.x;
                 let y = animation.attributes.find(a => a.attribute == "y");
                 if (y)
                     y.to = endPt.y;
+                */
             }
 
             endPt.x = Math.floor(endPt.x);
@@ -5679,10 +5691,10 @@ Hooks.once('ready', () => {
         
 
         //make sure to bypass if the token is being dropped somewhere, otherwise we could end up triggering a lot of tiles
-        if (((update.x != undefined && update.x != document.x) || (update.y != undefined && update.y != document.y) || update.elevation != undefined || update.rotation != undefined) && options.bypass !== true && (options.animate !== false || options.teleport)) { //(!game.modules.get("drag-ruler")?.active || options.animate)) {
+        if (((update.x != undefined && update.x != document.x) || (update.y != undefined && update.y != document.y) || update.elevation != undefined || update.rotation != undefined) && options.bypass !== true && (options.animate !== false || options.tileTeleport)) { //(!game.modules.get("drag-ruler")?.active || options.animate)) {
             let token = document.object;
 
-            if ((document.caught || document.getFlag('monks-active-tiles', 'teleporting')) && !options.teleport) {
+            if ((document.caught || document.getFlag('monks-active-tiles', 'teleporting')) && !options.tileTeleport) {
                 //do not update x/y if the token is under a cool down period, or if it is teleporting.
                 delete update.x;
                 delete update.y;
@@ -5825,7 +5837,7 @@ Hooks.once('ready', () => {
 
                         if (when == "enter" || when == "exit" || when == "stop") {
                             //calculate how much time until the token reaches the trigger point, and wait to call the trigger
-                            let ray = new Ray({ x: start.x, y: start.y }, { x: (triggerPt.x2 ?? triggerPt.x) - tokenMidX, y: (triggerPt.y2 ?? triggerPt.y) - tokenMidY });  // This isn't exactly accurate, but I want the trigger to happen when the trigger point is crossed, not the final destination
+                            let ray = new foundry.canvas.geometry.Ray({ x: start.x, y: start.y }, { x: (triggerPt.x2 ?? triggerPt.x) - tokenMidX, y: (triggerPt.y2 ?? triggerPt.y) - tokenMidY });  // This isn't exactly accurate, but I want the trigger to happen when the trigger point is crossed, not the final destination
                             const s = document.parent.dimensions.size;
                             const speed = s * (6.2 + (when == "exit" ? 0.3 : 0));
                             const duration = (ray.distance * 1000) / speed;
@@ -5934,7 +5946,7 @@ Hooks.on('preCreateChatMessage', async (document, data, options, userId) => {
 });
 
 Hooks.on('renderTileHUD', (app, html, data) => {
-    let active = app.object.document.getFlag('monks-active-tiles', 'active') ?? true;
+    let active = app.document.getFlag('monks-active-tiles', 'active') ?? true;
     $('<div>')
         .addClass('control-icon')
         .toggleClass('active', active)
@@ -5961,10 +5973,10 @@ Hooks.on('renderTileHUD', (app, html, data) => {
         .insertAfter($('.control-icon[data-action="locked"]', html));
 });
 
-Hooks.on('renderActorSheet', (app, html, data) => {
+Hooks.on('renderActorSheetV2', (app, html, data) => {
     let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
     if (waitingType == "entity") {
-        MonksActiveTiles.controlEntity(app.object);
+        MonksActiveTiles.controlEntity(app.document);
         $(app.element).hide();
         window.setTimeout(() => { app.close(); }, 1000);
     }
@@ -6001,50 +6013,124 @@ Hooks.on("renderPlaylistDirectory", (app, html, user) => {
 
 Hooks.on("renderWallConfig", async (app, html, options) => {
     if (setting("allow-door")) {
-        let entity = app.object.flags['monks-active-tiles']?.entity || {};
+        let entity = app.document.flags['monks-active-tiles']?.entity || {};
         if (typeof entity == "string" && entity)
             entity = JSON.parse(entity);
         let tilename = "";
         if (entity.id)
             tilename = entity.id == "within" ? i18n("MonksActiveTiles.WithinWall") : await MonksActiveTiles.entityName(entity);
-        let triggerData = foundry.utils.mergeObject({ tilename: tilename, showtagger: game.modules.get('tagger')?.active }, (app.object.flags['monks-active-tiles'] || {}));
+        let flags = app.document.flags['monks-active-tiles'] || {};
+        let triggerData = foundry.utils.mergeObject({ tilename: tilename, showtagger: game.modules.get('tagger')?.active }, flags);
         triggerData.entity = JSON.stringify(entity);
-        let wallHtml = await renderTemplate("modules/monks-active-tiles/templates/wall-config.html", triggerData);
 
-        if ($('.sheet-tabs', html).length) {
-            $('.sheet-tabs', html).append($('<a>').addClass("item").attr("data-tab", "triggers").html('<i class="fas fa-running"></i> Triggers'));
-            $('<div>').addClass("tab action-sheet").attr('data-tab', 'triggers').html(wallHtml).insertAfter($('.tab:last', html));
-        } else {
-            let root = $('form', html);
-            if (root.length == 0)
-                root = html;
-            let basictab = $('<div>').addClass("tab").attr('data-tab', 'basic');
-            $('> *:not(button):not(footer)', root).each(function () {
-                basictab.append(this);
+        await foundry.applications.handlebars.loadTemplates([
+            "modules/monks-active-tiles/templates/action-field.hbs"
+        ]);
+        triggerData.buttons = [
+            {
+                type: 'entity',
+                icon: "fas fa-crosshairs",
+                tooltip: "MonksActiveTiles.msg.selectentity",
+                action: "selectEntity",
+                classes: "entity-picker"
+            },
+            {
+                type: 'tagger',
+                icon: "fas fa-tag",
+                tooltip: "MonksActiveTiles.msg.usetagger",
+                action: "addTag",
+                classes: "entity-picker"
+            },
+            {
+                type: 'within',
+                icon: "fas fa-street-view",
+                tooltip: "MonksActiveTiles.msg.usewithinwall",
+                action: "selectEntity",
+                classes: "entity-picker"
+            }
+        ];
+        triggerData.triggerButtons = [
+            {
+                type: 'toggle',
+                toggle: true,
+                active: flags.open,
+                icon: "fas fa-door-open",
+                tooltip: "On Open Door",
+                id: "flags.monks-active-tiles.open",
+                classes: "door-trigger"
+            },
+            {
+                type: 'toggle',
+                toggle: true,
+                active: flags.close,
+                icon: "fas fa-door-closed",
+                tooltip: "On Close Door",
+                id: "flags.monks-active-tiles.close",
+                classes: "door-trigger"
+            },
+            {
+                type: 'toggle',
+                toggle: true,
+                active: flags.lock,
+                icon: "fas fa-lock",
+                tooltip: "On Lock Door",
+                id: "flags.monks-active-tiles.lock",
+                classes: "door-trigger"
+            },
+            {
+                type: 'toggle',
+                toggle: true,
+                active: flags.checklock,
+                icon: "fas fa-check-to-slot",
+                tooltip: "On Check Lock",
+                id: "flags.monks-active-tiles.checklock",
+                classes: "door-trigger"
+            },
+            {
+                type: 'toggle',
+                toggle: true,
+                active: flags.secret,
+                icon: "fas fa-user-secret",
+                tooltip: "On Secret Door",
+                id: "flags.monks-active-tiles.secret",
+                classes: "door-trigger"
+            }
+        ]
+        let wallHtml = await foundry.applications.handlebars.renderTemplate("modules/monks-active-tiles/templates/wall-config.html", triggerData);
+
+        if ($("fieldset.door-triggers", app.element).length == 0) {
+            // Add the wall triggers
+            let $fieldset = $('<fieldset>').addClass("door-triggers");
+            $fieldset.append($('<legend>').html(i18n("MonksActiveTiles.DoorTriggers")));
+            $fieldset.append(wallHtml);
+            $("section.window-content div.standard-form > fieldset:last", app.element).after($fieldset);
+
+            $(".door-trigger-entity", $fieldset).data("ctrl", {
+                id: "flags.monks-active-tiles.entity",
+                subtype: "entity",
+                restrict: (entity) => { return (entity instanceof foundry.canvas.placeables.Tile); }
             });
 
-            $(root).prepend($('<div>').addClass("tab action-sheet").attr('data-tab', 'triggers').html(wallHtml)).prepend(basictab).prepend(
-                $('<nav>')
-                    .addClass("sheet-tabs tabs")
-                    .append($('<a>').addClass("item active").attr("data-tab", "basic").html('<i class="fas fa-university"></i> Basic'))
-                    .append($('<a>').addClass("item").attr("data-tab", "triggers").html('<i class="fas fa-running"></i> Triggers'))
-            );
+            $('input[name="flags.monks-active-tiles.entity"]', $fieldset).data({
+                'restrict': (entity) => { return (entity instanceof foundry.canvas.placeables.Tile); },
+                'type': 'entity',
+                'deftype': 'tiles',
+                'value': flags['entity'] || '',
+                label: await MonksActiveTiles.entityName(flags['entity']) || `<span class="placeholder-style">Please select an entity</span>`,
+            });
+
+            $('button.toggle', $fieldset).on("click", (event) => {
+                $(event.target).toggleClass('active');
+                $(event.target).next().prop('checked', $(event.target).hasClass('active'));
+            });
+
+            $('button[data-type="entity"]', $fieldset).on("click", (event) => { ActionConfig.selectEntity.call(app, event, event.target) });
+            $('button[data-type="tagger"]', $fieldset).on("click", ActionConfig.addTag.bind(app));
+            $('button[data-type="within"]', $fieldset).on("click", (event) => {
+                let btn = $(event.currentTarget);
+                $('input[name="' + btn.attr('data-target') + '"]', app.element).data({ "id": "within", "name": i18n("MonksActiveTiles.WithinWall") }).next().html(i18n("MonksActiveTiles.WithinWall"));
+            });
         }
-
-        $('button[data-type="entity"]', html).on("click", ActionConfig.selectEntity.bind(app));
-        $('button[data-type="tagger"]', html).on("click", ActionConfig.addTag.bind(app));
-        $('button[data-type="within"]', html).on("click", (event) => {
-            let btn = $(event.currentTarget);
-            $('input[name="' + btn.attr('data-target') + '"]', app.element).val('{"id":"within","name":"' + i18n("MonksActiveTiles.WithinWall") + '"}').next().html(i18n("MonksActiveTiles.WithinWall"));
-        });
-
-        app.options.tabs = [{ navSelector: ".tabs", contentSelector: "form", initial: "basic" }];
-        app.options.height = "auto";
-        app._tabs = app._createTabHandlers();
-        const el = html[0];
-        app._tabs.forEach(t => t.bind(el));
-
-        app.setPosition();
     }
 });
 
@@ -6131,7 +6217,7 @@ Hooks.on("dropCanvasData", async (canvas, data, options, test) => {
         let dest = { x: data.x - (size / 2), y: data.y - (size / 2) };
 
         let td = foundry.utils.mergeObject(dest, {
-            img: macro.img || "icons/svg/dice-target.svg",
+            texture: { src: macro.img || "icons/svg/dice-target.svg" },
             width: size,
             height: size,
             flags: {
@@ -6162,9 +6248,6 @@ Hooks.on("renderTileConfig", (app, html, data) => {
     //Make sure that another module hasn't erased the monks-active-tiles class
     $(app.element).addClass("monks-active-tiles");
 
-    if ($("save-template-button", html).length == 0)
-        $("<button>").addClass("save-template-button").attr("type", "button").attr("title", i18n("MonksActiveTiles.SaveAsTemplate")).css({ "flex": "0 0 34px" }).html('<i class="fas fa-save" style="margin-right: 0px;"></i>').insertBefore($('button[type="submit"]', html)).on("click", MonksActiveTiles.saveTemplate.bind(app));
-
     $('[name="texture.src"]', html).closest('.form-group')
         .before(
             $('<div>')
@@ -6172,7 +6255,7 @@ Hooks.on("renderTileConfig", (app, html, data) => {
                 .append($('<label>').html("Name"))
                 .append($("<div>")
                     .addClass("form-fields")
-                    .append($('<input>').attr('type', 'text').attr('name', 'flags.monks-active-tiles.name').val(app.object.getFlag('monks-active-tiles', 'name'))))
+                    .append($('<input>').attr('type', 'text').attr('name', 'flags.monks-active-tiles.name').val(app.document.getFlag('monks-active-tiles', 'name'))))
           );
 
     app.setPosition();
@@ -6204,7 +6287,8 @@ Hooks.on("canvasReady", async () => {
 Hooks.on("openJournalEntry", (document, options, userId) => {
     if (MonksActiveTiles.waitingInput && MonksActiveTiles.waitingInput.waitingfield.data('type') == 'entity') {
         let restrict = MonksActiveTiles.waitingInput.waitingfield.data('restrict');
-        if (!restrict || restrict(document)) {
+        let tileDocument = MonksActiveTiles.waitingInput.options.parent.options.document;
+        if (!restrict || restrict(document, tileDocument)) {
             return false;
         }
     }
@@ -6335,7 +6419,7 @@ Hooks.on("updateScene", async (scene, data, options) => {
     }
 });
 
-Hooks.on("lightingRefresh", async (lightinEffect) => {
+Hooks.on("lightingRefresh", async (lightingEffect) => {
     let tiles = MonksActiveTiles.tileTriggerCache.lighting.map(tile => {
         let triggerData = tile.flags["monks-active-tiles"];
 
@@ -6378,17 +6462,20 @@ Hooks.on('updateWorldTime', async (worldTime) => {
 
 Hooks.on("getSceneControlButtons", (controls) => {
     if (game.user.isGM) {
-        let tileControls = controls.find(control => control.name === "tiles");
-        if (tileControls.tools.find(t => t.name == "templates") == undefined) {
-            tileControls.tools.push({
+        let tileControls = controls.tiles;
+        if (tileControls.tools.templates == undefined) {
+            tileControls.tools.templates = {
                 name: "templates",
                 title: "MonksActiveTiles.TileTemplates",
                 icon: "fas fa-folder-tree",
-                onClick: async () => {
-                    new TileTemplates().render(true);
+                onChange: async () => {
+                    if (MonksActiveTiles.tile_directory)
+                        MonksActiveTiles.tile_directory.close();
+                    else
+                        MonksActiveTiles.tile_directory = await new TileTemplates().renderPopout();
                 },
                 button: true
-            });
+            };
         }
     }
 });
@@ -6420,7 +6507,7 @@ Hooks.on("clickPlaylistSound", (sound) => {
     }
 });
 
-Hooks.on("renderPlayerList", (app, html, options) => {
+Hooks.on("renderPlayers", (app, html, data, options) => {
     $('.player', html).click(function (event) {
         let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
         if (waitingType == 'for') {
@@ -6429,10 +6516,11 @@ Hooks.on("renderPlayerList", (app, html, options) => {
             const user = game.users.get(userId);
 
             let restrict = MonksActiveTiles.waitingInput.waitingfield.data('restrict');
-            if (restrict && !restrict(user))
+            let tileDocument = MonksActiveTiles.waitingInput.options.parent.options.document;
+            if (restrict && !restrict(user, tileDocument))
                 return;
 
-            ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, user.id, event);
+            ActionConfig.updateSelection.call(MonksActiveTiles.waitingInput, { id: user.id, name: user.name }, event);
         }
     });
 });

@@ -1,0 +1,191 @@
+<div class="tab triggers{{#if tab.active}} active{{/if}}" data-group="{{tab.group}}" data-tab="{{tab.id}}">
+    {{> "templates/generic/tab-navigation.hbs" tabs=subtabs}}
+
+    <div class="tab matt-tab{{#if subtabs.setup.active}} active{{/if}}" data-group="activetile" data-tab="setup">
+        <p class="notes">{{ localize "MonksActiveTiles.TriggersHint" }}</p>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.Active" }}</label>
+            <div class="form-fields">
+                <input type="checkbox" name="flags.monks-active-tiles.active" {{ checked document.flags.monks-active-tiles.active }}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.History" }}</label>
+            <div class="form-fields">
+                <button class="view-history" type="button" data-action="viewHistory">{{ localize "MonksActiveTiles.history.ViewHistory" }}</button>
+                <button class="view-variables" type="button" data-action="viewVariables">{{ localize "MonksActiveTiles.history.ViewVariables" }}</button>
+                <div></div>
+                <input class="record-history" type="checkbox" name="flags.monks-active-tiles.record" {{ checked document.flags.monks-active-tiles.record }}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.RestrictedTo" }}</label>
+            <div class="form-fields">
+                <select name="flags.monks-active-tiles.restriction" data-dtype="String">
+                    {{ selectOptions triggerRestriction selected=document.flags.monks-active-tiles.restriction }}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.ControlledBy" }}</label>
+            <div class="form-fields">
+                <select name="flags.monks-active-tiles.controlled" data-dtype="String">
+                    {{ selectOptions triggerControlled selected=document.flags.monks-active-tiles.controlled }}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.When" }}</label>
+            <div class="form-fields">
+                <input type="hidden" name="flags.monks-active-tiles.trigger" value="{{triggerValues}}" />
+                <div class="multiple-dropdown-select">
+                    <div class="multiple-dropdown flexrow">
+                        <div class="multiple-dropdown-content">
+                            {{#each triggerNames}}
+                            <div class="multiple-dropdown-option flexrow" data-id="{{this.id}}"><span>{{this.name}}</span> <div class="remove-option">&times;</div></div>
+                            {{/each}}
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <ul class="dropdown-list">
+                        {{#each triggers}}
+                        <li class="multiple-dropdown-item{{#if this.selected}} selected{{/if}}" value="{{this.id}}">
+                            {{this.name}}
+                        </li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" {{#unless preventPaused}} style="display: none;" {{/unless}}>
+            <label>{{ localize "MonksActiveTiles.AllowWhenPaused" }}</label>
+            <div class="form-fields" style="flex: 0 0 50px;">
+                <input type="checkbox" name="flags.monks-active-tiles.allowpaused" {{ checked document.flags.monks-active-tiles.allowpaused }}>
+            </div>
+        </div>
+
+        <div class="form-group usealpha">
+            <label>{{ localize "MonksActiveTiles.UseTransparency" }}</label>
+            <div class="form-fields" style="flex: 0 0 50px;">
+                <input type="checkbox" name="flags.monks-active-tiles.usealpha" {{ checked document.flags.monks-active-tiles.usealpha }}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.HoverPointer" }}</label>
+            <div class="form-fields" style="flex: 0 0 50px;">
+                <input type="checkbox" name="flags.monks-active-tiles.pointer" {{ checked document.flags.monks-active-tiles.pointer }}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.TokenVision" }}</label>
+            <div class="form-fields" style="flex: 0 0 50px;">
+                <input type="checkbox" name="flags.monks-active-tiles.vision" {{ checked document.flags.monks-active-tiles.vision }}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.PerToken" }}</label>
+            <div class="form-fields" style="flex: 0 0 50px;">
+                <input type="checkbox" class="per-token" name="flags.monks-active-tiles.pertoken" {{ checked document.flags.monks-active-tiles.pertoken }}>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.MinRequired" }}</label>
+            <div class="form-fields" style="flex:0 0 100px;">
+                <input type="number" style="text-align:right;" name="flags.monks-active-tiles.minrequired" min="0" value="{{document.flags.monks-active-tiles.minrequired}}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.Cooldown" }}</label>
+            <div class="form-fields" style="flex:0 0 100px;">
+                <input type="number" style="text-align:right;" name="flags.monks-active-tiles.cooldown" min="0" value="{{document.flags.monks-active-tiles.cooldown}}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>{{ localize "MonksActiveTiles.ChanceTrigger" }}</label>
+            <div class="form-fields">
+                <range-picker name="flags.monks-active-tiles.chance" value="{{document.flags.monks-active-tiles.chance}}" min="0" max="100" step="1"></range-picker>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab matt-tab{{#if subtabs.actions.active}} active{{/if}}" data-group="activetile" data-tab="actions">
+        {{#if sounds}}
+        <div class="sounds-group">
+            <header>
+                <div class="name">{{ localize "MonksActiveTiles.Sounds" }}</div>
+            </header>
+
+            <ol class="scrollable sound-list" data-collection="sounds">
+                {{#each sounds as |sound i|}}
+                <li class="sound entry" data-sound-id="{{sound.id}}" data-entry-id="{{sound.id}}" data-index="{{i}}">
+                    <div class="name">
+                        <span>{{sound.name}}</span>
+                    </div>
+
+                    <div class="controls">
+                        <button type="button" class="inline-control icon fas fa-stop" title="Stop sound playing" data-action="stopSound"></button>
+                    </div>
+                </li>
+                {{/each}}
+            </ol>
+        </div>
+        {{/if}}
+
+        <div class="actions-group">
+            <header>
+                <div class="name">{{ localize "MonksActiveTiles.Actions" }}</div>
+
+                <div class="controls">
+                    <button type="button" class="inline-control icon fas fa-square-plus" data-tooltip="{{localize 'MonksActiveTiles.CreateNewAction'}}" data-action="createAction"></button>
+                </div>
+            </header>
+
+            <ol class="scrollable action-list" data-collection="actions">
+                {{#each actions}}
+                {{> "modules/monks-active-tiles/templates/action-partial.hbs" }}
+                {{/each}}
+            </ol>
+        </div>
+    </div>
+
+    <div class="tab matt-tab{{#if subtabs.images.active}} active{{/if}}" data-group="activetile" data-tab="images">
+        <p class="notes">{{ localize "MonksActiveTiles.TriggersImages" }}</p>
+
+        <section class="sheet-header">
+            <div class="form-group">
+                <label>{{ localize "MonksActiveTiles.ShownImage" }}</label>
+                <div class="form-fields">
+                    <input type="number" style="text-align: right; flex: 0 0 80px;" name="flags.monks-active-tiles.fileindex" min="0" value="{{index}}">
+                </div>
+            </div>
+        </section>
+
+        <div class="images-group">
+            <input type="hidden" class="filepath" name="_file-list">
+            <input type="hidden" class="folderpath" name="_folder-list">
+            <header>
+                <div class="controls" style="text-align: right;flex: 1;">
+                    <button type="button" class="inline-control icon fas fa-folder" data-tooltip="Browse Folder" data-action="browseFolders" data-target="_folder-list"></button>
+                    <button type="button" class="inline-control icon fas fa-square-plus" data-tooltip="Browse Files" data-action="browseImages" data-target="_file-list"></button>
+                </div>
+            </header>
+            <ol class="scrollable image-list" data-collection="files">
+                {{#each images}}
+                {{> "modules/monks-active-tiles/templates/image-partial.hbs" }}
+                {{/each}}
+            </ol>
+        </div>
+    </div>
+</div>

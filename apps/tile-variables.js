@@ -1,49 +1,83 @@
 import { MonksActiveTiles, log, setting, i18n, makeid } from '../monks-active-tiles.js';
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api
 
-export class TileVariables extends FormApplication {
+export class TileVariables extends HandlebarsApplicationMixin(ApplicationV2) {
     constructor(object, options = {}) {
         super(object, options);
     }
 
-    /** @inheritdoc */
-    static get defaultOptions() {
-        return foundry.utils.mergeObject(super.defaultOptions, {
-            id: "tile-variables",
-            classes: ["form", "action-sheet"],
+    static DEFAULT_OPTIONS = {
+        id: "trigger-variables",
+        classes: ["action-sheet"],
+        window: {
+            contentClasses: ["standard-form"],
+            icon: "fa-solid fa-running",
+            resizable: false,
             title: "MonksActiveTiles.TileVariables",
-            template: "modules/monks-active-tiles/templates/tile-variables.html",
-            width: 700,
-            height: 'auto'
-        });
+        },
+        actions: {
+            clearVariables: TileVariables.clearVariables,
+            deleteVariable: TileVariables.deleteVariable
+        },
+        position: {
+            width: 700
+        }
+    };
+
+    static PARTS = {
+        body: { template: "./modules/monks-active-tiles/templates/tile-variables.html" },
+        footer: { template: "templates/generic/form-footer.hbs" }
+    };
+
+    _initializeApplicationOptions(options) {
+        options = super._initializeApplicationOptions(options);
+        const theme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(options.document);
+        if (theme && !options.classes.includes("themed")) options.classes.push("themed", `theme-${theme}`);
+        return options;
     }
 
-    getData(options) {
-        let variables = foundry.utils.getProperty(this.object, "flags.monks-active-tiles.variables") || {};
-        return foundry.utils.mergeObject(super.getData(options), {
-            variables: variables
-        });
+    async _preparePartContext(partId, context, options) {
+        context = await super._preparePartContext(partId, context, options);
+        switch (partId) {
+            case "body":
+                this._prepareBodyContext(context, options);
+                break;
+            case "footer":
+                context.buttons = this.prepareButtons();
+        }
+
+        return context;
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
+    async _prepareBodyContext(context, options) {
+        let variables = foundry.utils.getProperty(this.options.document, "flags.monks-active-tiles.variables") || {};
 
-        $('.item-delete', html).click(async (event) => {
-            let row = event.currentTarget.closest('.item');
-            let id = row.dataset.id;
-            await this.object.update({[`flags.monks-active-tiles.variables.-=${id}`]: null})
-            delete this.object.flags["monks-active-tiles"].variables[id];
-            row.remove();
-            this.setPosition();
-        });
-
-        $('button[name="clear"]', html).click((event) => {
-            this.object.unsetFlag("monks-active-tiles", "variables");
-            $('.item-list', html).empty();
-            this.setPosition();
-        });
+        return foundry.utils.mergeObject(context, { variables });
     }
 
-    async _updateObject(event, formData) {
-        log('updating action', event, formData, this.object);
+    prepareButtons() {
+        return [
+            {
+                type: "button",
+                icon: "fas fa-undo",
+                label: "MonksActiveTiles.ClearVariables",
+                action: "clearVariables"
+            }
+        ];
+    }
+
+    static clearVariables(event) {
+        this.options.document.unsetFlag("monks-active-tiles", "variables");
+        $('.variable-list', this.element).empty();
+        this.setPosition();
+    }
+
+    static async deleteVariable(event, target) {
+        let row = target.closest('.variable');
+        let id = row.dataset.variableId;
+        await this.options.document.update({ [`flags.monks-active-tiles.variables.-=${id}`]: null })
+        delete this.options.document.flags["monks-active-tiles"].variables[id];
+        row.remove();
+        this.setPosition();
     }
 }

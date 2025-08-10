@@ -1,32 +1,29 @@
-<form class="monks-active-tiles sheet trigger-action" autocomplete="off" onsubmit="event.preventDefault();">
-    <ol class="items-list history-list">
-        <li class="item-header flexrow">
-            <h3 class="item-name flexrow">{{ localize "MonksActiveTiles.history.Name" }}</h3>
-            <div class="item-controls" style="flex: 0 0 160px;">{{ localize "MonksActiveTiles.history.Value" }}</div>
-            <div class="item-controls flexrow"></div>
+<div class="variable-group">
+    <header>
+        <div class="name">
+            <span>{{ localize "MonksActiveTiles.history.Name" }}</span>
+        </div>
+        <div class="value">
+            <span>{{ localize "MonksActiveTiles.history.Value" }}</span>
+        </div>
+        <div class="controls"></div>
+    </header>
+
+    <ol class="variable-list">
+        {{#each variables}}
+        <li class="variable" data-variable-id="{{@key}}">
+            <div class="name">
+                <span>{{@key}}</span>
+            </div>
+
+            <div class="value">
+                <span>{{this}}</span>
+            </div>
+
+            <div class="item-controls">
+                <button type="button" class="inline-control icon fas fa-trash" data-tooltip="Delete Variable" data-action="deleteVariable"></button>
+            </div>
         </li>
-
-        <ol class="item-list">
-            {{#each variables}}
-            <li class="item flexrow" data-id="{{@key}}">
-                <div class="item-name flexrow">
-                    <h4>{{@key}}</h4>
-                </div>
-
-                <div class="item-controls" style="flex: 0 0 160px;">
-                    {{this}}
-                </div>
-
-                <div class="item-controls flexrow">
-                    <a class="item-control item-delete" title="Delete Variable"><i class="fas fa-trash"></i></a>
-                </div>
-            </li>
-            {{/each}}
-        </ol>
+        {{/each}}
     </ol>
-    <footer class="sheet-footer flexrow">
-        <button type="button" name="clear">
-            <i class="fas fa-undo"></i> {{localize "MonksActiveTiles.ClearVariables"}}
-        </button>
-    </footer>
-</form>
+</div>

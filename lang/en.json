@@ -42,6 +42,7 @@
   "MonksActiveTiles.MinRequired": "Min. Required to Trigger",
   "MonksActiveTiles.TagName": "Enter Tag Name",
   "MonksActiveTiles.Save": "Save",
+  "MonksActiveTiles.SaveAsTemplate": "Save as Template",
   "MonksActiveTiles.SnapToGrid": "Snap to grid",
   "MonksActiveTiles.History": "History",
   "MonksActiveTiles.HoverPointer": "Hoverover Pointer",
@@ -61,6 +62,7 @@
   "MonksActiveTiles.ActiveScene": "Active Scene",
   "MonksActiveTiles.TriggeringTokenScene": "Triggering Token Scene",
   "MonksActiveTiles.TokenVision": "Token must have sight to trigger",
+  "MonksActiveTiles.DoorTriggers": "Door Triggers",
 
   "MonksActiveTiles.actiontext.pause": "<action>{pause} game</action>",
   "MonksActiveTiles.actiontext.delay": "<action>Wait</action> for <detail>\"{delay} seconds\"</detail>",
@@ -199,6 +201,7 @@
   "MonksActiveTiles.ctrl.activate": "Activate",
   "MonksActiveTiles.ctrl.usepermission": "Permissions",
   "MonksActiveTiles.ctrl.distance": "Distance",
+  "MonksActiveTiles.ctrl.unit": "Unit of Measure",
   "MonksActiveTiles.ctrl.name": "Name",
   "MonksActiveTiles.ctrl.chatbubble": "Chat Bubble",
   "MonksActiveTiles.ctrl.runasgm": "Run as",
@@ -532,9 +535,9 @@
   "MonksActiveTiles.show-imageless.name": "Show Imageless Tile",
   "MonksActiveTiles.show-imageless.hint": "Show the tile on the token layer to the GM if there's no image set",
 
-  "MonksActiveTiles.tabs.Setup": "Setup",
-  "MonksActiveTiles.tabs.Actions": "Actions",
-  "MonksActiveTiles.tabs.Images": "Images",
+  "MonksActiveTiles.tabs.setup": "Setup",
+  "MonksActiveTiles.tabs.actions": "Actions",
+  "MonksActiveTiles.tabs.images": "Images",
 
   "MonksActiveTiles.history.ViewHistory": "View History",
   "MonksActiveTiles.history.ViewVariables": "View Variables",
@@ -544,6 +547,20 @@
   "MonksActiveTiles.history.Who": "Who",
   "MonksActiveTiles.history.Name": "Name",
   "MonksActiveTiles.history.Value": "Value",
+
+  "TILE": {
+    "TABS": {
+      "activetile": "Triggers"
+    }
+  },
+
+  "SIDEBAR": {
+    "ACTIONS": {
+      "CREATE": {
+        "Tile": "Create Tile"
+      }
+    }
+  },
 
   "TYPES": {
     "RegionBehavior": {

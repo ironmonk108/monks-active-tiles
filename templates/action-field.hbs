@@ -1,0 +1,78 @@
+{{#if (eq type "line")}}
+<hr />
+{{else}}
+<div class="form-group action-field {{classes}}{{#if hidden}} hidden{{/if}}{{#if check}} check{{/if}}" data-action-id="{{id}}" data-field-type="{{type}}">
+    <label for="{{id}}"{{#if (or (eq type "number") (eq type "checkbox"))}}style="white-space: nowrap;"{{/if}}>{{localize name}}{{#if required}}<span class="req-field" data-tooltip="This is a required field">*</span>{{/if}}</label>
+    <div class="form-fields{{#if (eq type "select")}} select-field-group{{/if}}">
+        {{#if (eq type "filepicker")}}
+        <file-picker id="{{id}}" name="{{id}}" typeof="{{subtype}}" value="{{value}}" placeholder="{{placeholder}}" class="{{#if required}}required{{/if}}" data-change-action="fileChanged"></file-picker>
+
+        {{else if (eq type "colorpicker")}}
+        <color-picker id="{{id}}" name="{{id}}" value="{{value}}" data-change-action="colourChanged"></color-picker>
+
+        {{else if (eq type "filelist")}}
+        <div class="files-list">
+            <input type="hidden" id="{{id}}" name="{{id}}" class="{{#if required}}required{{/if}}" value="{{value}}" />
+            <header>
+                <div class="controls">
+                    <button class="inline-control icon fas fa-square-plus" type="button" data-tooltip="{{localize 'FILES.BrowseTooltip'}}" data-action="addFile"></button>
+                </div>
+            </header>
+            <ol class="file-list{{#if required}} required{{/if}}">
+                {{#each files as |file|}}
+                {{> "modules/monks-active-tiles/templates/filelist-partial.hbs" }}
+                {{/each}}
+            </ol>
+        </div>
+
+        {{else if (eq type "buttonlist")}}
+        <div class="buttons-list">
+            <input type="hidden" id="{{id}}" name="{{id}}" class="{{#if required}}required{{/if}}" value="{{value}}" />
+            <header>
+                <div class="controls">
+                    <button class="inline-control icon fas fa-square-plus" type="button" data-tooltip="Add Button" data-action="addButton"></button>
+                </div>
+            </header>
+            <ol class="button-list{{#if required}} required{{/if}}">
+                {{#each items as |button|}}
+                {{> "modules/monks-active-tiles/templates/buttonlist-partial.hbs" }}
+                {{/each}}
+            </ol>
+        </div>
+
+        {{else if (eq type "list")}}
+        <select id="{{id}}" name="{{id}}" data-dtype="String" class="{{#if required}}required{{/if}}" data-change-action="selectChanged">
+            {{> "modules/monks-active-tiles/templates/list-partial.hbs" }}
+        </select>
+
+        {{else if (eq type "select")}}
+        <input type="hidden" id="{{id}}" name="{{id}}" class="{{#if required}}required{{/if}}" data-change-action="dataChanged" value="{{value}}" />
+        <span class="display-value" data-dblclick-action="editEntry">{{{label}}}</span>
+
+        {{else if (eq type "text")}}
+        {{#if (eq subtype "multiline")}}
+        <textarea id="{{id}}" name="{{id}}" placeholder="{{placeholder}}" data-blur-action="textBlur" class="{{#if required}}required{{/if}}" {{attr}}>{{value}}</textarea>
+        {{else}}
+        <input type="text" id="{{id}}" name="{{id}}" placeholder="{{placeholder}}" data-blur-action="textBlur" class="{{#if required}}required{{/if}}" value="{{value}}" {{attr}} />
+        {{/if}}
+
+        {{else if (eq type "number")}}
+        <input type="number" id="{{id}}" name="{{id}}" placeholder="{{placeholder}}" data-blur-action="textBlur" class="{{#if required}}required{{/if}}" value="{{value}}" min="{{min}}" max="{{max}}" step="{{step}}" {{attr}} />
+
+        {{else if (eq type "slider")}}
+        <range-picker id="{{id}} " name="{{id}}" min="{{min}}" max="{{max}}" step="{{step}}" value="{{value}}"></range-picker>
+
+        {{else if (eq type "checkbox")}}
+        <input type="checkbox" id="{{id}} " name="{{id}}" {{#if value}} checked{{/if}} data-action="checkboxClicked" />
+        {{/if}}
+
+        {{#each buttons as |button|}}
+        <button type="button" class="icon {{button.icon}} fa-sm {{button.classes}}{{#if button.toggle}} toggle{{/if}}{{#if button.active}} active{{/if}}" data-action="{{button.action}}" data-tooltip="{{localize button.tooltip}}" data-type="{{button.type}}" data-target="{{../id}}">{{button.label}}</button>
+        {{#if button.toggle}}<input type="checkbox" id="{{button.id}}" name="{{button.id}}" {{#if button.active}} checked{{/if}} style="display:none;"/>{{/if}}
+        {{/each}}
+    </div>
+</div>
+{{/if}}
+{{#if help}}
+<p class="notes help-text{{#if helpHidden}} hidden{{/if}}" data-target-id="{{id}}">{{{help}}}</p>
+{{/if}}

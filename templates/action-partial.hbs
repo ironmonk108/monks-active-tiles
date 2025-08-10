@@ -1,0 +1,13 @@
+<li class="action entry" data-action-id="{{id}}" data-entry-id="{{id}}" data-index="{{i}}">
+    <div class="name{{#if disabled}} disabled{{/if}}{{#if landingStop}} landing-stop{{/if}}" {{#if marker}} marker="{{marker}}" {{/if}} draggable="true">
+        {{#each landings}}
+        <div class="landing-marker" marker="{{this}}">&nbsp;</div>
+        {{/each}}
+        <span>{{{content}}}</span>
+    </div>
+
+    <div class="controls">
+        <button type="button" class="inline-control icon fas fa-edit" data-tooltip="{{localize 'MonksActiveTiles.EditAction'}}" data-action="editAction"></button>
+        <button type="button" class="inline-control icon fas fa-trash" data-tooltip="{{localize 'MonksActiveTiles.DeleteAction'}}" data-action="deleteAction"></button>
+    </div>
+</li>

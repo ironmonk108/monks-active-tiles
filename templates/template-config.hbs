@@ -1,0 +1,4 @@
+{{formGroup fields.name value=name rootId=rootId}}
+{{#if allowEditing}}
+{{formInput fields.tiledata value=tiledata language=editorLang elementType="code-mirror" aria=(object label=(localize fields.tiledata.label))}}
+{{/if}}
