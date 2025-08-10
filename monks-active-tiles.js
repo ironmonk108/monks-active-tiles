@@ -1239,6 +1239,7 @@ export class MonksActiveTiles {
                 },
                 buttons: [
                     {
+                        action: "yes",
                         icon: '<i class="fas fa-check"></i>',
                         label: game.i18n.localize("Yes"),
                         callback: (event, button) => {
@@ -1263,6 +1264,7 @@ export class MonksActiveTiles {
                         }
                     },
                     {
+                        action: "no",
                         icon: '<i class="fas fa-times"></i>',
                         label: game.i18n.localize("No"),
                         callback: (event, button) => {
@@ -1310,12 +1312,13 @@ export class MonksActiveTiles {
                     return;
                 },
                 buttons: [
-                    { icon: '<i class="fas fa-check"></i>', label: "OK", callback }
+                    { action: "yes", icon: '<i class="fas fa-check"></i>', label: "OK", callback }
                 ]
             }, options).catch(() => { return {}; });
         } else {
             let _html;
             let _submit = false;
+            let buttonIndex = 0;
             return MonksActiveTiles.createDialog(id, {
                 title, content, id,
                 close: (event) => {
@@ -1336,6 +1339,7 @@ export class MonksActiveTiles {
                     $('.dialog-buttons').addClass("flexrow");
                 },
                 buttons: buttons.map(b => ({
+                    action: `button_${buttonIndex++}`,
                     label: b.name,
                     callback: (event, button) => {
                             let data = {};

@@ -1,3 +1,7 @@
+## Version 13.02
+
+Fixing Dialog issue with multiple buttons
+
 ## Version 13.01
 
 v13 compatibility
