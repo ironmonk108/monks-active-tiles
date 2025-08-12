@@ -272,7 +272,6 @@
   "MonksActiveTiles.ctrl.htmlfile": "HTMLファイル",
   "MonksActiveTiles.ctrl.buttons": "ボタン",
   "MonksActiveTiles.ctrl.select-target": "ターゲット選択",
-  "MonksActiveTiles.ctrl.close-means-no": "ダイアログを閉じる時『「いいえ」を選ぶ場合』をトリガー",
   "MonksActiveTiles.ctrl.fastforward": "早送り",
   "MonksActiveTiles.ctrl.width": "幅",
   "MonksActiveTiles.ctrl.height": "高さ",

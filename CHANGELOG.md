@@ -1,3 +1,35 @@
+## Version 13.03
+
+Added "other" option to Switch Tile Image.  It's the same as random, but it won't use the same image twice in a row.
+
+Removed the "Close triggers No" check box in the dialog action, in favor of adding a goto specifically for closing the dialog.  This way you have more control over what closing the dialog means.
+
+Removed the Dialog options field in favor of providing CSS Classes to the dialog.  So you can attach your own style sheet easier.  'Cause no one really knew how to use the options field.
+
+Updated the dialog buttons to allow for icons, or to be set as a submit button.
+
+Changed the functionality of a Dialog slightly.  Hopefully it doesn't break too much.  A button will still send its goto through as data, but a submit button will now also include the form data.  So if you want a complex Dialog, you can use the custom button to do what you want instead of having to create your own buttons on the form.
+
+Fixed the Create Button dialog so that the button text makes more sense.
+
+Fixed issues using Tagger for entities
+
+Fixed issue where checkboxes weren't triggering conditional fields
+
+Fixed issue with drag and dropping actions between tiles
+
+Updated the acvtion list header to accept a click, in case the add new button is missing, you can just click anywhere on the header.
+
+Fixed issues with Foundry not being consistent with how it assigns themes
+
+Attempted to fix issues with the Switch Tile Image and the fade transition.
+
+Fixed issue with creating a new Macro
+
+Fixed issue with the Lighting Animation trigger.  It triggers appropriately and now only triggers when a full percentage has changed.  So it's easier to set it to trigger at a specific darkness level.
+
+Added scrolling to the action config.  This can affect the Dialog action as it has a lot of information in the window.  So now instead of filling the screen, it will allow you to scroll through your information.
+
 ## Version 13.02
 
 Fixing Dialog issue with multiple buttons

@@ -2,7 +2,9 @@
 <hr />
 {{else}}
 <div class="form-group action-field {{classes}}{{#if hidden}} hidden{{/if}}{{#if check}} check{{/if}}" data-action-id="{{id}}" data-field-type="{{type}}">
-    <label for="{{id}}"{{#if (or (eq type "number") (eq type "checkbox"))}}style="white-space: nowrap;"{{/if}}>{{localize name}}{{#if required}}<span class="req-field" data-tooltip="This is a required field">*</span>{{/if}}</label>
+    {{#unless (or (eq type "filelist") (eq type "buttonlist"))}}
+    <label for="{{id}}" {{#if (or (eq type "number") (eq type "checkbox"))}} style="white-space: nowrap;" {{/if}}>{{localize name}}{{#if required}}<span class="req-field" data-tooltip="This is a required field">*</span>{{/if}}</label>
+    {{/unless}}
     <div class="form-fields{{#if (eq type "select")}} select-field-group{{/if}}">
         {{#if (eq type "filepicker")}}
         <file-picker id="{{id}}" name="{{id}}" typeof="{{subtype}}" value="{{value}}" placeholder="{{placeholder}}" class="{{#if required}}required{{/if}}" data-change-action="fileChanged"></file-picker>
@@ -14,6 +16,7 @@
         <div class="files-list">
             <input type="hidden" id="{{id}}" name="{{id}}" class="{{#if required}}required{{/if}}" value="{{value}}" />
             <header>
+                <div class="button-name">{{localize name}}</div>
                 <div class="controls">
                     <button class="inline-control icon fas fa-square-plus" type="button" data-tooltip="{{localize 'FILES.BrowseTooltip'}}" data-action="addFile"></button>
                 </div>
@@ -29,6 +32,10 @@
         <div class="buttons-list">
             <input type="hidden" id="{{id}}" name="{{id}}" class="{{#if required}}required{{/if}}" value="{{value}}" />
             <header>
+                <div class="button-name">{{localize name}}</div>
+                <div class="button-goto">Goto</div>
+                <div class="button-icon">Icon</div>
+                <div class="button-submit">Submit?</div>
                 <div class="controls">
                     <button class="inline-control icon fas fa-square-plus" type="button" data-tooltip="Add Button" data-action="addButton"></button>
                 </div>
@@ -68,7 +75,7 @@
 
         {{#each buttons as |button|}}
         <button type="button" class="icon {{button.icon}} fa-sm {{button.classes}}{{#if button.toggle}} toggle{{/if}}{{#if button.active}} active{{/if}}" data-action="{{button.action}}" data-tooltip="{{localize button.tooltip}}" data-type="{{button.type}}" data-target="{{../id}}">{{button.label}}</button>
-        {{#if button.toggle}}<input type="checkbox" id="{{button.id}}" name="{{button.id}}" {{#if button.active}} checked{{/if}} style="display:none;"/>{{/if}}
+        {{#if button.toggle}}<input type="checkbox" id="{{button.id}}" name="{{button.id}}" {{#if button.active}} checked{{/if}} style="display:none;" />{{/if}}
         {{/each}}
     </div>
 </div>

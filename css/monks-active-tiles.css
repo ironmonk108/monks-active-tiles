@@ -21,7 +21,19 @@
     text-overflow: ellipsis;
 }
 
+body.theme-light .action-sheet:not(.themed) .display-value,
+body.theme-light .wall-config:not(.themed) .display-value,
 .action-sheet.theme-light .display-value,
+.wall-config.theme-light .display-value {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--color-dark-4);
+    border-color: var(--color-dark-6);
+    color: var(--color-dark-2);
+}
+
+body.theme-light .action-sheet:not(.themed) .display-value
+.action-sheet.theme-light .display-value,
+body.theme-light .wall-config:not(.themed) .display-value,
 .wall-config.theme-light .display-value {
     color: var(--color-dark-2);
     box-shadow: inset 0 0 6px var(--input-background-color);
@@ -33,6 +45,7 @@
     color: var(--color-light-5);
 }
 
+body.theme-light .action-sheet:not(.themed) .placeholder-style,
 .action-sheet.theme-light .placeholder-style {
     color: var(--color-dark-4);
 }
@@ -151,30 +164,37 @@
     font-style: italic;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .action-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .action-style {
     color: #000000;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .filter-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .filter-style {
     color: #220208;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .logic-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .logic-style {
     color: #020522
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .entity-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .entity-style {
     color: #242424;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .details-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .details-style {
     color: #1b012d;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .value-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .value-style {
     color: #515151;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .action-list .tag-style,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .action-list .tag-style {
     color: #063d68;
 }
@@ -330,6 +350,7 @@
     color: var(--color-light-3);
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .multiple-dropdown,
 .tile-config.monks-active-tiles.theme-light .multiple-dropdown {
     color: var(--color-dark-2);
     box-shadow: inset 0 0 6px var(--input-background-color);
@@ -358,6 +379,7 @@
     margin-right: 2px;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .multiple-dropdown .multiple-dropdown-option,
 .tile-config.monks-active-tiles.theme-light .multiple-dropdown .multiple-dropdown-option {
     background-color: #888;
 }
@@ -585,12 +607,13 @@ body.system-CoC7 .multiple-dropdown .multiple-dropdown-option {
     grid-template-columns: 24rem 3rem;
 }
 
-#trigger-action .buttons-list header {
-    grid-template-columns: 27rem;
-    justify-items: flex-end;
-}
+#trigger-action .buttons-list header,
 #trigger-action .buttons-list ol {
-    grid-template-columns: 12rem 12rem 3rem;
+    grid-template-columns: 11rem 9rem 3rem 3rem 3rem;
+}
+
+#trigger-action .buttons-list ol {
+    padding-left: 10px;
 }
 
 .tile-config.monks-active-tiles .tab.triggers .actions-group header,
@@ -611,6 +634,13 @@ body.system-CoC7 .multiple-dropdown .multiple-dropdown-option {
     padding: 1px 8px;
 }
 
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .actions-group header,
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .sounds-group header,
+body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .images-group header,
+body.theme-light #tile-history:not(.themed) .history-group header,
+body.theme-light #trigger-variables:not(.themed) .variable-group header,
+body.theme-light #trigger-action:not(.themed) .file-list header,
+body.theme-light #trigger-action:not(.themed) .buttons-list header,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .actions-group header,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .sounds-group header,
 .tile-config.monks-active-tiles.theme-light .tab.triggers .images-group header,
@@ -667,6 +697,20 @@ body.system-CoC7 .multiple-dropdown .multiple-dropdown-option {
 
 .tile-config.monks-active-tiles .tab.triggers ol .name span {
     width: 100%;
+}
+
+#trigger-action .buttons-list ol .button-icon,
+#trigger-action .buttons-list ol .button-submit {
+    text-align: center;
+}
+
+#trigger-action .buttons-list header .button-icon,
+#trigger-action .buttons-list header .button-submit {
+    justify-self: center;
+}
+
+#trigger-action .buttons-list header .controls {
+    justify-self: flex-end;
 }
 
 #tiles-popout .directory-list li a {

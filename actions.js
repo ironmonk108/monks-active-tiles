@@ -5305,7 +5305,7 @@ export class ActionManager {
                         name: "MonksActiveTiles.ctrl.select",
                         type: "text",
                         defvalue: 'next',
-                        help: "you can also use <i>first</i>, <i>last</i>, <i>next</i>, <i>previous</i>, or <i>random</i> to select a spot"
+                        help: "you can also use <i>first</i>, <i>last</i>, <i>next</i>, <i>previous</i>, <i>other</i>, or <i>random</i> to select a spot"
                     },
                     {
                         id: "transition",
@@ -5355,23 +5355,30 @@ export class ActionManager {
 
                     let getPosition = async function (entity) {
                         let fileindex = foundry.utils.getProperty(entity, 'flags.monks-active-tiles.fileindex') || 0;
-                        let position = await getValue(action.data?.select ?? "next", args, entity, {
+                        let positionKey = await getValue(action.data?.select ?? "next", args, entity, {
                             fileindex: fileindex,
                             files: entity._images
                         });
 
-                        if (position == "first")
+                        let position = fileindex + 1;
+
+                        if (positionKey == "first")
                             position = 1;
-                        else if (position == "last")
+                        else if (positionKey == "last")
                             position = entity._images.length;
-                        else if (position == "random")
+                        else if (positionKey == "random")
                             position = Math.floor(Math.random() * entity._images.length) + 1;
-                        else if (position == "next")
+                        else if (positionKey == "other") {
+                            while (position == fileindex + 1 && entity._images.length > 1) {
+                                position = Math.floor(Math.random() * entity._images.length) + 1;
+                            }
+                        }
+                        else if (positionKey == "next")
                             position = ((fileindex + 1) % entity._images.length) + 1;
-                        else if (position == "previous")
+                        else if (positionKey == "previous")
                             position = (fileindex == 0 ? entity._images.length : fileindex);
-                        else if (typeof position == "string") {
-                            let positions = ("" + position).split(',').map(d => d.trim());
+                        else if (typeof positionKey == "string") {
+                            let positions = ("" + positionKey).split(',').map(d => d.trim());
                             let pos = positions[Math.floor(Math.random() * positions.length)];
 
                             if (pos.indexOf('-') != -1) {
@@ -5384,7 +5391,7 @@ export class ActionManager {
                                 position = parseInt(roll.value);
                             }
                         } else
-                            position = parseInt(position);
+                            position = parseInt(positionKey);
 
                         position = Math.clamp(position, 1, entity._images.length);
 
@@ -5874,15 +5881,6 @@ export class ActionManager {
                         subtype: "for",
                         defvalue: "trigger"
                     },
-                    {
-                        id: "closeNo",
-                        name: "MonksActiveTiles.ctrl.close-means-no",
-                        type: "checkbox",
-                        defvalue: true,
-                        conditional: (app) => {
-                            return $('select[name="data.dialogtype"]', app.element).val() == 'confirm';
-                        },
-                    },
                     { type: "line", help: "Provide either text or an html file"},
                     {
                         id: "content",
@@ -5906,8 +5904,8 @@ export class ActionManager {
                     },
                     { type: "line" },
                     {
-                        id: "options",
-                        name: "MonksActiveTiles.ctrl.options",
+                        id: "classes",
+                        name: "MonksActiveTiles.ctrl.classes",
                         type: "text",
                         conditional: (app) => {
                             return $('select[name="data.dialogtype"]', app.element).val() == 'custom';
@@ -5930,14 +5928,6 @@ export class ActionManager {
                         },
                     },
                     {
-                        id: "buttons",
-                        name: "MonksActiveTiles.ctrl.buttons",
-                        type: "buttonlist",
-                        conditional: (app) => {
-                            return $('select[name="data.dialogtype"]', app.element).val() == 'custom';
-                        },
-                    },
-                    {
                         id: "yes",
                         name: "MonksActiveTiles.ctrl.onyes",
                         type: "text",
@@ -5954,6 +5944,27 @@ export class ActionManager {
                             return $('select[name="data.dialogtype"]', app.element).val() == 'confirm';
                         },
                         placeholder: "Enter the name of the Landing to jump to"
+                    },
+                    {
+                        id: "close",
+                        name: "MonksActiveTiles.ctrl.onclose",
+                        type: "text",
+                        placeholder: "Enter the name of the Landing to jump to"
+                        //placeholder: "Enter '_prevent' to prevent the close button"
+                    },
+                    {
+                        type: "line",
+                        conditional: (app) => {
+                            return $('select[name="data.dialogtype"]', app.element).val() == 'custom';
+                        }
+                    },
+                    {
+                        id: "buttons",
+                        name: "MonksActiveTiles.ctrl.buttons",
+                        type: "buttonlist",
+                        conditional: (app) => {
+                            return $('select[name="data.dialogtype"]', app.element).val() == 'custom';
+                        },
                     },
                 ],
                 values: {
@@ -6006,7 +6017,7 @@ export class ActionManager {
                             content = await foundry.applications.handlebars.renderTemplate(action.data.file, context);
                     }
 
-                    let options = JSON.parse(action.data?.options || "{}");
+                    let options = {};
                     if (action.data?.width)
                         options.width = action.data?.width != "auto" ? await getValue(action.data?.width, args, null, {type: "number"}) : action.data?.width;
                     if (action.data?.height)
@@ -6015,22 +6026,46 @@ export class ActionManager {
                     let showto = action.data.showto ?? ActionManager.getDefaultValue("dialog", "showto", "trigger");
                     let showUsers = MonksActiveTiles.getForPlayers(showto, args);
 
+                    let closeGoto = action.data.close;
+                    let buttons = foundry.utils.duplicate(action.data.buttons || []);
+                    if (action.data.dialogtype == "confirm") {
+                        buttons = [{
+                            action: "yes",
+                            icon: '<i class="fas fa-check"></i>',
+                            name: game.i18n.localize("Yes"),
+                            goto: action.data.yes
+                        },
+                        {
+                            action: "no",
+                            icon: '<i class="fas fa-xmark"></i>',
+                            name: game.i18n.localize("No"),
+                            goto: action.data.no
+                        }];
+                    } else if (action.data.dialogtype == "alert") {
+                        buttons = [{
+                            action: "ok",
+                            icon: '<i class="fas fa-check"></i>',
+                            name: game.i18n.localize("OK"),
+                        }];
+                        closeGoto = closeGoto ?? "_prevent";
+                    }
+
                     if (showUsers.includes(game.user.id)) {
                         MonksActiveTiles._showDialog({
                             tile,
                             token: tokens[0],
                             value,
-                            type: action.data.dialogtype,
                             id,
                             title,
                             content,
                             options,
-                            yes: action.data.yes,
-                            no: action.data.no,
-                            closeNo: action.data.closeNo ?? true,
-                            buttons: action.data.buttons
+                            classes: action.data.classes,
+                            closeGoto,
+                            buttons
                         }
-                        ).then((results) => { tile.resumeActions(_id, results); });
+                        ).then((results) => {
+                            tile.resumeActions(_id, results);
+                        });
                         showUsers = showUsers.filter(u => u != game.user.id);
                     }
                     if (showUsers.length) {
@@ -6044,10 +6079,9 @@ export class ActionManager {
                             id,
                             title,
                             content,
-                            options: options,
-                            yes: action.data.yes,
-                            no: action.data.no,
-                            closeNo: action.data.closeNo ?? true,
+                            options,
+                            classes: action.data.classes,
+                            closeGoto,
                             buttons: action.data.buttons
                         });
                     }

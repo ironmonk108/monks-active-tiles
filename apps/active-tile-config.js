@@ -348,7 +348,7 @@ export const WithActiveTileConfig = (TileConfig) => {
                         entries.splice(to, 0, newEntry);
                         foundry.utils.setProperty(this.document, `flags.monks-active-tiles.${collection}`, entries);
 
-                        let element = $(`li[data-entry-id="${data.id}"]`).clone().attr('data-entry-id', newAction.id).attr(`data-${collection.slice(0, -1) }-id`, newAction.id)
+                        let element = $(`li[data-entry-id="${data.id}"]`).clone().attr('data-entry-id', newEntry.id).attr(`data-${collection.slice(0, -1)}-id`, newEntry.id)
                         if (target)
                             $(element).insertBefore(target);
                         else
@@ -487,6 +487,8 @@ export const WithActiveTileConfig = (TileConfig) => {
             $('.multiple-dropdown-select .multiple-dropdown-item', this.element).on("click", this.selectTrigger.bind(this));
 
             $('.image-list .image', this.element).on("dblclick", this.selectImage.bind(this));
+
+            $('.actions-group header', this.element).on("click", ActiveTileConfig._createAction.bind(this));
 
             new foundry.applications.ux.DragDrop.implementation({
                 dragSelector: ".action-list .action .name",

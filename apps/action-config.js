@@ -394,7 +394,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
         let id = ctrl?.id ?? event.originalEvent.target.dataset.target;
         if (!id.startsWith("flags"))
             id = "data." + id;
-        let field = $(`[name="${id}"]`, elem).get(0);
+        let field = event.currentTarget || $(`[name="${id}"]`, elem).get(0);
 
         if (ctrl?.onChange && typeof ctrl?.onChange == "function") {
             let command = $('select[name="action"]', this.element).val();
@@ -692,10 +692,12 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
         let content = await foundry.applications.handlebars.renderTemplate("modules/monks-active-tiles/templates/button-edit.html", data);
         await foundry.applications.api.DialogV2.confirm({
             window: {
-                title: "Edit Button"
+                title: foundry.utils.isEmpty(data) ? "New Button" : "Edit Button"
             },
             content,
             yes: {
+                label: "Save",
+                icon: "fas fa-save",
                 callback: (event, button) => {
                     const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
                     data = foundry.utils.mergeObject(data, fd);
@@ -712,6 +714,10 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                     field.data("value", buttons);
                     ActionConfig.onValueChange.call(this, { currentTarget: field.get(0), originalEvent: event });
                 }
+            },
+            no: {
+                label: "Cancel",
+                icon: "fas fa-times",
             }
         })
     }
@@ -925,7 +931,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static async addTag(event) {
         //let data = this._getSubmitData();
-        let prop = event.currentTarget.dataset["target"]
+        let prop = event.target.dataset["target"]
         let entity = $(`input[name="${prop}"]`).data("value") || {};
         entity["tag-name"] = entity?.id?.substring(7);
         entity.match = entity.match || "all";
@@ -1016,7 +1022,8 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
         let document = this.options.parent?.document || this.options.document;
         const theme = foundry.applications.apps.DocumentSheetConfig.getSheetThemeForDocument(document);
         if (theme) classes.push("themed", `theme-${theme}`);
-        let btn = $(event.currentTarget);
+        let btn = $(event.target);
+        let originalEvent = event;
         return foundry.applications.api.DialogV2.prompt({
             window: {
                 title: "Enter tag",
@@ -1037,7 +1044,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                     entity.name = await MonksActiveTiles.entityName(entity);
                     field.data("value", entity);
                     displayField.html(entity.name);
-                    ActionConfig.onValueChange.call(this, { currentTarget: field.get(0), originalEvent: event.originalEvent });
+                    ActionConfig.onValueChange.call(this, { currentTarget: field.get(0), originalEvent });
                 }
             },
             rejectClose: false,
@@ -1168,7 +1175,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async checkConditional() {
-        for (let elem of $('.action-field', this.element)) {
+        for (let elem of $('.action-field,hr', this.element)) {
             let ctrl = $(elem).data('ctrl');
             let showField = true;
             if (ctrl.conditional && typeof ctrl.conditional == "function") {
@@ -1182,7 +1189,8 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                 $(`.help-text[data-target-id="data.${ctrl.id}"]`, this.element).toggleClass("hidden", !(showField && showHelp));
             }
         }
-        this.setPosition({ height: 'auto' });
+        if (!!this.element.parentElement)
+            this.setPosition({ height: 'auto' });
     }
 
     async changeAction(command) {
@@ -1438,6 +1446,8 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
 
             $("[data-dblclick-action]", field).on('dblclick', ActionConfig.editEntryId.bind(this));
 
+            $("input[type='checkbox']", field).on('change', ActionConfig.onValueChange.bind(this));
+
             if (ctrl.type != "line") {
                 if (loadingid != this.loadingid)
                     break;
@@ -1489,7 +1499,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
         // Check the conditionals once all the fields have been added
         this.checkConditional();
 
-        if (this.rendered)
+        if (!!this.element.parentElement)
             this.setPosition({ top: null });
     }
 }

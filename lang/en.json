@@ -274,7 +274,7 @@
   "MonksActiveTiles.ctrl.htmlfile": "HTML file",
   "MonksActiveTiles.ctrl.buttons": "Buttons",
   "MonksActiveTiles.ctrl.select-target": "Select Target",
-  "MonksActiveTiles.ctrl.close-means-no": "Closing dialog triggers no goto",
+  "MonksActiveTiles.ctrl.onclose": "On Close Goto",
   "MonksActiveTiles.ctrl.fastforward": "Fast forward",
   "MonksActiveTiles.ctrl.width": "Width",
   "MonksActiveTiles.ctrl.height": "Height",
@@ -300,6 +300,7 @@
   "MonksActiveTiles.ctrl.triggerremote": "Trigger at Destination",
   "MonksActiveTiles.ctrl.code": "Code",
   "MonksActiveTiles.ctrl.hascondition": "Has",
+  "MonksActiveTiles.ctrl.classes": "CSS Classes",
 
   "MonksActiveTiles.mode.enter": "Enter",
   "MonksActiveTiles.mode.exit": "Exit",

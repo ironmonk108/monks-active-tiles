@@ -112,6 +112,8 @@ export class MonksActiveTiles {
 
     static _slotmachine = {};
 
+    static _transitionCleanup = {};
+
     static batch = new BatchManager();
 
     static tileTriggerCache = { ready: [], hover: [], time: [], darkness: [], lighting: [], click: [], combat: [] };
@@ -1212,7 +1214,7 @@ export class MonksActiveTiles {
         }
     }
 
-    static async _showDialog({ tile, token, value, type, title, id, content, options, yes, no, closeNo, buttons } = {}) {
+    static async _showDialog({ tile, token, value, title, id, content, options, classes, closeGoto, buttons } = {}) {
         let context = {
             actor: token?.actor?.toObject(),
             token: token?.toObject(),
@@ -1228,174 +1230,84 @@ export class MonksActiveTiles {
         compiled = Handlebars.compile(content);
         content = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
 
-        if (type == 'confirm') {
-            return MonksActiveTiles.createDialog(id, {
-                title,
-                content,
-                focus: true,
-                default: "yes",
-                close: () => {
-                    return;
-                },
-                buttons: [
-                    {
-                        action: "yes",
-                        icon: '<i class="fas fa-check"></i>',
-                        label: game.i18n.localize("Yes"),
-                        callback: (event, button) => {
-                            let data = {};
-
-                            const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
-                            data = foundry.utils.mergeObject(data, fd);
-                            context.value = foundry.utils.mergeObject(context.value, fd);
-
-                            if (yes) {
-                                if (yes.includes("{{")) {
-                                    const compiled = Handlebars.compile(yes);
-                                    data.goto = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
-                                } else
-                                    data.goto = yes;
-                            }
-
-                            if (!data.goto)
-                                data.continue = false;
-
-                            return data;
-                        }
-                    },
-                    {
-                        action: "no",
-                        icon: '<i class="fas fa-times"></i>',
-                        label: game.i18n.localize("No"),
-                        callback: (event, button) => {
-                            let data = {}
-
-                            const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
-                            data = foundry.utils.mergeObject(data, fd);
-                            context.value = foundry.utils.mergeObject(context.value, fd);
-
-                            if (no) {
-                                if (no.includes("{{")) {
-                                    const compiled = Handlebars.compile(no);
-                                    data.goto = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
-                                } else
-                                    data.goto = no;
-                            }
-
-                            if (!data.goto)
-                                data.continue = false;
-
-                            return data;
-                        }
-                    }
-                ]
-            },
-            options,
-            ).catch(() => {
-                return closeNo ? { goto: no } : {};
+        if (buttons.length === 0) {
+            buttons.push({
+                action: "monks-active-tile-hide-blank-button",
+                class: "hidden"
             });
-        } else if (type == 'alert') {
-            let callback = (event, button) => {
-                let data = {};
-                const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
-                data = foundry.utils.mergeObject(data, fd);
+        }
 
-                return data;
-            };
-            return MonksActiveTiles.createDialog(id, {
-                title,
-                content,
-                callback,
-                rejectClose: true,
-                default: "ok",
-                close: () => {
-                    return;
-                },
-                buttons: [
-                    { action: "yes", icon: '<i class="fas fa-check"></i>', label: "OK", callback }
-                ]
-            }, options).catch(() => { return {}; });
-        } else {
-            let _html;
-            let _submit = false;
+        return new Promise((resolve, reject) => {
             let buttonIndex = 0;
-            return MonksActiveTiles.createDialog(id, {
-                title, content, id,
-                close: (event) => {
+            buttons = buttons.map(b => ({
+                action: b.action ?? `button_${buttonIndex++}`,
+                type: b.submit ? "submit" : "button",
+                label: b.name,
+                icon: b.icon,
+                callback: (event, button) => {
                     let data = {};
 
-                    if (_submit) {
+                    if (button.type == "submit") {
+                        // Only add the form data on submit buttons
                         const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
                         data = foundry.utils.mergeObject(data, fd);
+                        context.value = foundry.utils.mergeObject(context.value, fd);
                     }
-                    return data;
-                },
-                render: (event, dialog) => {
-                    _html = dialog;
-                    $(dialog).on("submit", (evt) => {
-                        _submit = true;
-                        $('.window-header a.close', $(evt.currentTarget).closest('.app.dialog')).click();
-                    });
-                    $('.dialog-buttons').addClass("flexrow");
-                },
-                buttons: buttons.map(b => ({
-                    action: `button_${buttonIndex++}`,
-                    label: b.name,
-                    callback: (event, button) => {
-                            let data = {};
 
-                            const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
-                            data = foundry.utils.mergeObject(data, fd);
-                            context.value = foundry.utils.mergeObject(context.value, fd);
+                    if (b.goto) {
+                        if (b.goto.includes("{{")) {
+                            const compiled = Handlebars.compile(b.goto);
+                            data.goto = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
+                        } else
+                            data.goto = b.goto;
+                    }
 
-                            if (b.goto) {
-                                if (b.goto.includes("{{")) {
-                                    const compiled = Handlebars.compile(b.goto);
-                                    data.goto = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
-                                } else
-                                    data.goto = b.goto;
-                            }
+                    if (!data.goto)
+                        data.continue = false;
 
-                            if (!data.goto)
-                                data.continue = false;
-
-                            return data;
-                        }
-                }))
-            }, options);
-        }
-    }
-
-    static async createDialog(id, data = {}, options = {}, renderOptions = {}) {
-        return new Promise((resolve, reject) => {
-
-            // Wrap buttons with Promise resolution.
-            const buttons = foundry.utils.deepClone(data.buttons);
-            for (const [id, button] of Object.entries(buttons)) {
-                const cb = button.callback;
-                function callback(html, event) {
-                    const result = cb instanceof Function ? cb.call(this, html, event) : undefined;
-                    resolve(result === undefined ? id : result);
+                    resolve(data);
                 }
-                button.callback = callback;
+            }));
+
+            let submit = (result, dialog) => {
+                if (!result) {
+                    result = new foundry.applications.ux.FormDataExtended($("form", dialog.element).get(0)).object;
+                    context.value = foundry.utils.mergeObject(context.value, result);
+                }
+                resolve(result);
             }
 
-            // Wrap close with Promise resolution or rejection.
-            const originalClose = data.close;
-            const close = () => {
-                const result = originalClose instanceof Function ? originalClose() : undefined;
-                if (result !== undefined) resolve(result);
-                else reject(new Error("The Dialog was closed without a choice being made."));
-                delete MonksActiveTiles._dialogs[id];
-            };
-
-            options.classes = (options.classes || []);
-            options.classes.push("monks-active-tiles-dialog");
-
             // Construct the dialog.
-            const dialog = new foundry.applications.api.DialogV2({ ...data, buttons, close }, options);
-            dialog.render(true, renderOptions);
+            let dialogOptions = {
+                window: {
+                    title,
+                    contentClasses: (classes || "").split(",").filter(c => !!c)
+                },
+                classes: ["monks-active-tiles-dialog"],
+                content,
+                buttons,
+                submit,
+                close,
+                position: {
+                    width: options?.width || 'auto',
+                    height: options?.height || 'auto',
+                }
+            }
+            if (!!id)
+                dialogOptions.id = id;
+            const dialog = new foundry.applications.api.DialogV2(dialogOptions);
             MonksActiveTiles._dialogs[id] = dialog;
+
+            dialog.addEventListener("close", event => {
+                if (closeGoto == "_prevent") reject(new Error("Dialog was dismissed without pressing a button."));
+                else resolve(!!closeGoto ? { goto: closeGoto } : null);
+            }, { once: true });
+
+            dialog.addEventListener("render", event => {
+                $("button[data-action='monks-active-tile-hide-blank-button']", dialog.element).remove();
+            });
+
+            dialog.render({ force: true });
         });
     }
 
@@ -1652,6 +1564,14 @@ export class MonksActiveTiles {
     static async transitionImage(entity, id, from, to, transition, time) {
         let t = entity._object;
 
+        if (!t.mesh) {
+            // There is no current mesh, so I can't transition to anything.
+            // Just set the texture and return.
+            t.src.texture = await foundry.canvas.loadTexture(to);
+            t.texture = t.src.texture;
+            return;
+        }
+
         let duration = time - new Date().getTime();
 
         log("transition", from, to);
@@ -1696,7 +1616,8 @@ export class MonksActiveTiles {
         t._transition_time = time;
         t._transition_to = to;
         const container = t._transition = new PIXI.Container();
-        canvas.tiles.addChild(container);
+        let tIndex = t.mesh.parent.getChildIndex(t.mesh);
+        t.mesh.parent.addChildAt(container, tIndex + 1);
         //container.width = entity.width;
         //container.height = entity.height;
         container.x = entity.x;
@@ -1872,14 +1793,17 @@ export class MonksActiveTiles {
             foundry.canvas.animation.CanvasAnimation.terminateAnimation(animationName);
             let result = t._transition_to;
             let transitionId = t._transition_id;
-            canvas.tiles.removeChild(t._transition);
-            delete t._transition;
-            delete t._transition_id;
-            delete t._transition_time;
             t.texture = toTex;
             t.texture.x = 0;
             t.texture.y = 0;
             t.mesh.visible = true;
+            if (t._remove_transition) {
+                t._remove_transition.destroy();
+            }
+            t._remove_transition = t._transition;
+            delete t._transition;
+            delete t._transition_id;
+            delete t._transition_time;
             //t.mesh.refresh();
             //log("checking transition queue", t._transition, t._transitionQueue);
             //if (t._transitionQueue?.length) {
@@ -1889,7 +1813,7 @@ export class MonksActiveTiles {
             if (!game.user.isGM) {
                 MonksActiveTiles.emit("transitionend", { entityid: entity.uuid, transitionId });
             }
-            return result
+            return result;
         });
     }
 
@@ -2503,7 +2427,7 @@ export class MonksActiveTiles {
 
                 // Create a temporary Macro
                 else {
-                    const cls = getDocumentClass$1("Macro");
+                    const cls = CONFIG["Macro"].documentClass;
                     const macro = new cls({ name: cls.defaultName({ type: "chat" }), type: "chat", scope: "global" });
                     const hotbarSlot = event.target.dataset.slot;
                     await macro.sheet.render({ force: true, hotbarSlot });
@@ -2513,11 +2437,16 @@ export class MonksActiveTiles {
 
         let tileDraw = function (wrapped, ...args) {
             if (this._transition) {
-                this.removeChild(this._transition);
+                canvas.tiles.removeChild(this._transition);
             }
             return wrapped(...args).then((result) => {
+                if (this._remove_transition) {
+                    this._remove_transition.destroy();
+                    delete this._remove_transition;
+                }
+
                 if (this._transition) {
-                    this.addChild(this._transition);
+                    canvas.tiles.addChild(this._transition);
                     this.mesh.visible = false;
                 }
 
@@ -6423,21 +6352,27 @@ Hooks.on("updateScene", async (scene, data, options) => {
     }
 });
 
-Hooks.on("lightingRefresh", async (lightingEffect) => {
-    let tiles = MonksActiveTiles.tileTriggerCache.lighting.map(tile => {
-        let triggerData = tile.flags["monks-active-tiles"];
+Hooks.on("configureCanvasEnvironment", async (config) => {
+    if (!!config.environment?.darknessLevel) {
+        let darknessLevel = config.environment.darknessLevel.toFixed(2);
+        if (darknessLevel != MonksActiveTiles.lastDarknessLevel) {
+            let tiles = MonksActiveTiles.tileTriggerCache.lighting.map(tile => {
+                let triggerData = tile.flags["monks-active-tiles"];
 
-        if (setting("prevent-when-paused") && game.paused && !game.user.isGM && triggerData.allowpaused !== true)
-            return;
+                if (setting("prevent-when-paused") && game.paused && !game.user.isGM && triggerData.allowpaused !== true)
+                    return;
 
-        //Trigger this Tile
-        return { tile, args: { tokens: [], method: 'lighting', options: { darkness: canvas.scene.environment?.darknessLevel } } };
-    }).filter(t => !!t).sort((a, b) => (b.tile.sort ?? b.tile.z) - (a.tile.sort ?? a.tile.z));
-    for (let t of tiles) {
-        let triggerResult = await t.tile.trigger(t.args);
-        if (triggerResult?.stoptriggers)
-            break;
-    };
+                //Trigger this Tile
+                return { tile, args: { tokens: [], method: 'lighting', options: { darkness: darknessLevel } } };
+            }).filter(t => !!t).sort((a, b) => (b.tile.sort ?? b.tile.z) - (a.tile.sort ?? a.tile.z));
+            for (let t of tiles) {
+                let triggerResult = await t.tile.trigger(t.args);
+                if (triggerResult?.stoptriggers)
+                    break;
+            };
+            MonksActiveTiles.lastDarknessLevel = darknessLevel;
+        }
+    }
 });
 
 Hooks.on('updateWorldTime', async (worldTime) => {

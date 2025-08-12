@@ -270,7 +270,6 @@
   "MonksActiveTiles.ctrl.htmlfile": "Fichier HTML",
   "MonksActiveTiles.ctrl.buttons": "Boutons",
   "MonksActiveTiles.ctrl.select-target": "Sélectionner la cible",
-  "MonksActiveTiles.ctrl.close-means-no": "Fermer le dialogue ne déclenche pas de goto",
   "MonksActiveTiles.ctrl.fastforward": "Avance rapide",
   "MonksActiveTiles.ctrl.width": "Largeur",
   "MonksActiveTiles.ctrl.height": "Hauteur",

@@ -1,8 +1,10 @@
 <li class="button-row" data-button-id="{{id}}">
     <div class="button-name"><span>{{name}}</span></div>
     <div class="button-goto"><span>{{goto}}</span></div>
+    <div class="button-icon"><span><i class="{{icon}}"></i></span></div>
+    <div class="button-submit"><span>{{#if submit}}<i class="far fa-square-check"></i>{{/if}}</span></div>
     <div class="controls">
-        <button type="button" class="inline-control icon fas fa-pencil" data-action="editButton"></button>
-        <button type="button" class="inline-control icon fas fa-trash" data-action="removeButton"></button>
+        <button type="button" class="inline-control icon fas fa-pencil" data-action="editButton" data-tooltip="Edit Button"></button>
+        <button type="button" class="inline-control icon fas fa-trash" data-action="removeButton" data-tooltip="Remove Button"></button>
     </div>
 </li>
