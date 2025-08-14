@@ -42,6 +42,7 @@
   "MonksActiveTiles.MinRequired": "Min. wymagane do wyzwolenia",
   "MonksActiveTiles.TagName": "Wpisz nazwę tagu",
   "MonksActiveTiles.Save": "Zapisz",
+  "MonksActiveTiles.SaveAsTemplate": "Zapisz jako szablon",
   "MonksActiveTiles.SnapToGrid": "Przyciąganie do siatki",
   "MonksActiveTiles.History": "Historia",
   "MonksActiveTiles.HoverPointer": "Wskaźnik najechania kursorem",
@@ -61,6 +62,7 @@
   "MonksActiveTiles.ActiveScene": "Aktywna scena",
   "MonksActiveTiles.TriggeringTokenScene": "Token wyzwalający scenę",
   "MonksActiveTiles.TokenVision": "Token musi mieć widoczność, aby mógł wyzwolić działanie",
+  "MonksActiveTiles.DoorTriggers": "Wyzwalacze drzwi",
 
   "MonksActiveTiles.actiontext.pause": "<action>{pause} grę</action>",
   "MonksActiveTiles.actiontext.delay": "<action>Poczekaj</action> przez <detail>\"{delay} sekund\"</detail>",
@@ -199,6 +201,7 @@
   "MonksActiveTiles.ctrl.activate": "Aktywacja",
   "MonksActiveTiles.ctrl.usepermission": "Uprawnienia",
   "MonksActiveTiles.ctrl.distance": "Odległość",
+  "MonksActiveTiles.ctrl.unit": "Jednostka miary",
   "MonksActiveTiles.ctrl.name": "Nazwa",
   "MonksActiveTiles.ctrl.chatbubble": "Dymek tekstowy",
   "MonksActiveTiles.ctrl.runasgm": "Uruchom jako",
@@ -271,6 +274,7 @@
   "MonksActiveTiles.ctrl.htmlfile": "Plik HTML",
   "MonksActiveTiles.ctrl.buttons": "Przyciski",
   "MonksActiveTiles.ctrl.select-target": "Wybierz cel",
+  "MonksActiveTiles.ctrl.onclose": "Po zamknięciu Przejdź do",
   "MonksActiveTiles.ctrl.fastforward": "Szybkie przewijanie do przodu",
   "MonksActiveTiles.ctrl.width": "Szerokość",
   "MonksActiveTiles.ctrl.height": "Wysokość",
@@ -296,6 +300,7 @@
   "MonksActiveTiles.ctrl.triggerremote": "Wyzwalacz w miejscu docelowym",
   "MonksActiveTiles.ctrl.code": "Kod",
   "MonksActiveTiles.ctrl.hascondition": "Ma",
+  "MonksActiveTiles.ctrl.classes": "Klasy CSS",
 
   "MonksActiveTiles.mode.enter": "Wejście",
   "MonksActiveTiles.mode.exit": "Wyjście",
@@ -531,9 +536,9 @@
   "MonksActiveTiles.show-imageless.name": "Pokaż kafelek bez obrazu",
   "MonksActiveTiles.show-imageless.hint": "Pokaż kafelek na warstwie tokenów dla MG, jeśli nie ma ustawionego obrazu",
 
-  "MonksActiveTiles.tabs.Setup": "Konfiguracja",
-  "MonksActiveTiles.tabs.Actions": "Akcje",
-  "MonksActiveTiles.tabs.Images": "Obrazy",
+  "MonksActiveTiles.tabs.setup": "Konfiguracja",
+  "MonksActiveTiles.tabs.actions": "Akcje",
+  "MonksActiveTiles.tabs.images": "Obrazy",
 
   "MonksActiveTiles.history.ViewHistory": "Wyświetl historię",
   "MonksActiveTiles.history.ViewVariables": "Wyświetl zmienne",
@@ -543,6 +548,20 @@
   "MonksActiveTiles.history.Who": "Kto",
   "MonksActiveTiles.history.Name": "Nazwa",
   "MonksActiveTiles.history.Value": "Wartość",
+
+  "TILE": {
+    "TABS": {
+      "activetile": "Wyzwalacze"
+    }
+  },
+
+  "SIDEBAR": {
+    "ACTIONS": {
+      "CREATE": {
+        "Tile": "Utwórz kafelek"
+      }
+    }
+  },
 
   "TYPES": {
     "RegionBehavior": {
