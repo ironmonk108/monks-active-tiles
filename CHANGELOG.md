@@ -1,3 +1,29 @@
+## Version 13.04
+
+Fixed issue with moving token no longer animating
+
+Fixed issue with vision modes when creating a token
+
+Fixed issue with creating an entity from a RollTable
+
+Fixed issue with the Alert Dialog not continuing with actions
+
+Fixed issue with incorrect default name being show when selecting from a collection
+
+Fixed issue with editing of location and entity values no longer saving
+
+Fixed issue with FilePicker not being able to select HTML files.  The option is there, but I think Foundry forgot to check for it.
+
+Fixed issue with multiple triggers not being constrained to the dropdown properly
+
+Fixed Tagger issue where handlebar expressions that resolve to a blank id was selecting everything
+
+Fixed issue where Foundry was stripping out javascript code from Dialog content
+
+Fixed Foundry issue where submitting a Form without an actionable buttons was throwing an error
+
+Removed the scrollable option from the action config dialog.  As much as it helped the Dialog action, it was hiding the typeahead.
+
 ## Version 13.03
 
 Added "other" option to Switch Tile Image.  It's the same as random, but it won't use the same image twice in a row.

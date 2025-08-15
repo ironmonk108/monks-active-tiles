@@ -941,7 +941,7 @@ export class ActionManager {
                             }
                             */
 
-                            batch.add("update", entity, { x: newPos.x, y: newPos.y }, { isPaste: true, bypass: !action.data.trigger, originaltile: tile.id, animate: true, animation: { duration, time } });
+                            batch.add("update", entity, { x: newPos.x, y: newPos.y }, { bypass: !action.data.trigger, originaltile: tile.id, animate: true, animation: { duration, time } });
 
                             MonksActiveTiles.addToResult(entity, result);
                         }
@@ -1435,8 +1435,8 @@ export class ActionManager {
                             const td = await actor.getTokenDocument();
                             foundry.utils.mergeObject(td, ad.data);
 
-                            if (game.system.id === "pf2e")
-                                td.detectionModes = [];
+                            td.detectionModes = [];
+                            td.sight.range = td.sight.range == Infinity ? null : td.sight.range;
 
                             if (!ad.lockpos) {
                                 if (action.data.avoidtokens) {
@@ -3413,10 +3413,10 @@ export class ActionManager {
                                 for (let tableresult of results.results) {
                                     let entity;
 
-                                    if (!tableresult.uuid) {
+                                    if (!tableresult.documentUuid) {
                                         await checkText(tableresult.name, results);
                                     } else {
-                                        let entity = await fromUuid(tableresult.uuid);
+                                        entity = await fromUuid(tableresult.documentUuid);
                                         if (entity == null)
                                             await checkText(tableresult.name, results);
                                     }
@@ -6046,6 +6046,7 @@ export class ActionManager {
                             action: "ok",
                             icon: '<i class="fas fa-check"></i>',
                             name: game.i18n.localize("OK"),
+                            continue: true
                         }];
                         closeGoto = closeGoto ?? "_prevent";
                     }

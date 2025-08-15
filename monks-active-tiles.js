@@ -618,6 +618,8 @@ export class MonksActiveTiles {
                 let tag = id.substring(7);
 
                 tag = await getValue(tag, args);
+                if (tag == "")
+                    return [];
 
                 let options = {};
                 if (!entity.match || entity.match == "any")
@@ -1265,7 +1267,10 @@ export class MonksActiveTiles {
                     if (!data.goto)
                         data.continue = false;
 
-                    resolve(data);
+                    if (!!b.continue)
+                        data.continue = b.continue;
+
+                    return data;
                 }
             }));
 
@@ -1284,7 +1289,7 @@ export class MonksActiveTiles {
                     contentClasses: (classes || "").split(",").filter(c => !!c)
                 },
                 classes: ["monks-active-tiles-dialog"],
-                content,
+                content: $("<div>").html(content).get(0),
                 buttons,
                 submit,
                 close,
@@ -1297,6 +1302,25 @@ export class MonksActiveTiles {
                 dialogOptions.id = id;
             const dialog = new foundry.applications.api.DialogV2(dialogOptions);
             MonksActiveTiles._dialogs[id] = dialog;
+
+            let newSubmit = async function (target, event) {
+                event.preventDefault();
+                const priorDisabledStates = [];
+                for (const action of Object.keys(this.options.buttons)) {
+                    const button = this.element.querySelector(`button[data-action="${action}"]`);
+                    if (button) {
+                        priorDisabledStates.push([button, button.disabled]);
+                        button.disabled = true;
+                    }
+                }
+                const button = this.options.buttons[target?.dataset.action];
+                const result = (await button?.callback?.(event, target, this)) ?? button?.action;
+                await this.options.submit?.(result, this);
+                for (const [button, disabled] of priorDisabledStates) button.disabled = disabled;
+                return this.options.form.closeOnSubmit ? this.close({ submitted: true }) : this;
+            };
+
+            dialog._onSubmit = newSubmit.bind(dialog);
 
             dialog.addEventListener("close", event => {
                 if (closeGoto == "_prevent") reject(new Error("Dialog was dismissed without pressing a button."));

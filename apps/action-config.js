@@ -425,7 +425,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             let subtype = ctrl?.subtype || event.originalEvent.target.dataset.type || "entity";
             let default_placeholder = subtype == 'entity' ? 'Please select an entity' : 'Please select a location';
             let value = $(field).data("value") || $(field).val();
-            displayField.html((subtype == 'entity' ? await MonksActiveTiles.entityName(value) : await MonksActiveTiles.locationName(value)) || `<span class="placeholder-style">${i18n(ctrl?.placeholder) || default_placeholder}</span>`);
+            displayField.html((subtype == 'entity' ? await MonksActiveTiles.entityName(value, ctrl.defaultType) : await MonksActiveTiles.locationName(value)) || `<span class="placeholder-style">${i18n(ctrl?.placeholder) || default_placeholder}</span>`);
         }
     }
 
@@ -904,8 +904,11 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             } else if (["entity", "location", "either", "position"].includes(entityType)) {
                 if (selection.x != undefined || selection.y != undefined)
                     entityName = await MonksActiveTiles.locationName(selection);
-                else
-                    entityName = await MonksActiveTiles.entityName(selection);                      
+                else {
+                    let elem = waitingField.closest(".action-field");
+                    let ctrl = elem.data("ctrl");
+                    entityName = await MonksActiveTiles.entityName(selection, ctrl.defaultType);
+                }
 
                 let displayField = waitingField.closest(".action-field").find('.display-value');
                 displayField.html(entityName);
@@ -1147,7 +1150,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             content: html,
             ok: {
                 label: i18n("MonksActiveTiles.Save"),
-                callback: async (event, button) => {
+                callback: async (evt, button) => {
                     const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
                     let data = foundry.utils.expandObject(fd);
 
@@ -1164,7 +1167,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                     location.name = await MonksActiveTiles.locationName(location);
                     let field = $(event.currentTarget).prev();
                     field.data("value", location);
-                    ActionConfig.onValueChange.call(this, { currentTarget: field.get(0), originalEvent: event.originalEvent });
+                    ActionConfig.onValueChange.call(this, { currentTarget: field.get(0), originalEvent: event.originalEvent ?? event });
                 }
             },
             rejectClose: false,
@@ -1303,7 +1306,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                     //so this is the fun one, when the button is pressed, I need to minimize the windows, and wait for a selection
                     fieldData.datavalue = { 'restrict': ctrl.restrict, 'type': ctrl.subtype, deftype: ctrl.defaultType, placeholder: ctrl.placeholder, value: data[ctrl.id] };
                     let default_placeholder = ctrl.subtype == 'entity' ? 'Please select an entity' : 'Please select a location';
-                    fieldData.label = (ctrl.subtype == 'entity' ? await MonksActiveTiles.entityName(data[ctrl.id]) : await MonksActiveTiles.locationName(data[ctrl.id])) || `<span class="placeholder-style">${i18n(ctrl.placeholder) || default_placeholder}</span>`;
+                    fieldData.label = (ctrl.subtype == 'entity' ? await MonksActiveTiles.entityName(data[ctrl.id], ctrl.defaultType) : await MonksActiveTiles.locationName(data[ctrl.id])) || `<span class="placeholder-style">${i18n(ctrl.placeholder) || default_placeholder}</span>`;
 
                     if (!options.hide.includes('select')) {
                         fieldData.buttons.push({
@@ -1434,6 +1437,17 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             let field = $(html);
 
             $('.action-controls', this.element).append(field);
+
+            if (ctrl.type == "filepicker") {
+                $("button", field).on("click", async (event) => {
+                    // We need to adjust the file picker afterwards, since the file picker doesn't support html
+                    window.setTimeout(() => {
+                        let filepicker = $('file-picker', field).get(0).picker;
+                        filepicker.extensions = Object.keys(CONST.HTML_FILE_EXTENSIONS).map(t => `.${t}`);
+                        filepicker.browse();
+                    }, 100);
+                });
+            }
 
             if (fieldData.datavalue) {
                 $(`[name="${id}"]`, field).data(fieldData.datavalue);

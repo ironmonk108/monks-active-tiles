@@ -334,7 +334,6 @@ body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .act
 
 .multiple-dropdown-select {
     position: relative;
-    /*max-width: 242px;*/
 }
 
 .multiple-dropdown {
@@ -361,6 +360,7 @@ body.theme-light .tile-config.monks-active-tiles:not(.themed) .multiple-dropdown
 .multiple-dropdown > div {
     overflow: hidden;
     white-space: nowrap;
+    width: 270px;
 }
 
 .multiple-dropdown > i {
