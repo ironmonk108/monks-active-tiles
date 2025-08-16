@@ -1098,7 +1098,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             content: html,
             ok: {
                 label: i18n("MonksActiveTiles.Save"),
-                callback: async (event, button) => {
+                callback: async (evt, button) => {
                     const fd = new foundry.applications.ux.FormDataExtended(button.form).object;
                     let data = foundry.utils.expandObject(fd);
 
@@ -1438,7 +1438,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
 
             $('.action-controls', this.element).append(field);
 
-            if (ctrl.type == "filepicker") {
+            if (ctrl.type == "filepicker" && ctrl.subtype == "html") {
                 $("button", field).on("click", async (event) => {
                     // We need to adjust the file picker afterwards, since the file picker doesn't support html
                     window.setTimeout(() => {

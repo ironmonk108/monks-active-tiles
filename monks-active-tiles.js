@@ -2432,6 +2432,21 @@ export class MonksActiveTiles {
             }
         }
 
+        if (game.system.id == "pf2e") {
+            CONFIG.ui.actors.DEFAULT_OPTIONS.actions.openPartySheet = async function (event) {
+                const documentId = (event.target instanceof Element ? event.target.closest("[data-entry-id]") : null)?.dataset.entryId;
+                const actor = game.actors.get(documentId ?? "");
+
+                let waitingType = MonksActiveTiles.waitingInput?.waitingfield?.data('type');
+                if (waitingType == 'entity') {
+                    if (actor)
+                        MonksActiveTiles.controlEntity(actor);
+                } else {
+                    actor?.sheet.render(!0);
+                }
+            }
+        }
+
         foundry.applications.ui.Hotbar.prototype.constructor.DEFAULT_OPTIONS.actions.execute = async function (event) {
             let getMacroForSlot = (element) => {
                 const slot = element.dataset.slot;
@@ -2785,15 +2800,11 @@ export class MonksActiveTiles {
 
         let _onLeftClick2 = function (wrapped, ...args) {
             let event = args[0];
-            //if (setting("fix-click-issue"))
-            //    MonksActiveTiles.canvasClick.call(this, event, 'click');
             MonksActiveTiles.canvasClick.call(this, event, 'dblclick');
             wrapped(...args);
         }
         let _onRightClick2 = function (wrapped, ...args) {
             let event = args[0];
-            //if (setting("fix-click-issue"))
-            //    MonksActiveTiles.canvasClick.call(this, event, 'rightclick');
             MonksActiveTiles.canvasClick.call(this, event, 'dblrightclick');
             wrapped(...args);
         }
@@ -5570,6 +5581,7 @@ Hooks.on('ready', () => {
         game.settings.set("monks-active-tiles", "fix-scene-again", true);
     }
 
+    /*
     $("#board").on("pointerdown", function (event) {
         let pointerType = (event.pointerType !== 'mouse' || event.button === 0) ? 'click' : event.button === 2 ? 'rightclick' : 'dblclick';
         if (pointerType == 'rightclick') {
@@ -5585,6 +5597,7 @@ Hooks.on('ready', () => {
             }
         }
     });
+    */
     /*
     $("#board").on("pointerdown", function (event) {
         let pointerType =  (event.pointerType !== 'mouse' || event.button === 0) ? 'click' : event.button === 2 ? 'rightclick' : 'dblclick';

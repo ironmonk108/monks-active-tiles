@@ -1,3 +1,15 @@
+## Version 13.05
+
+Fixed issue when creating a token at a location based on Tagger, when that tagger location doesn't exist.
+
+Fixed issue with selecting editing the Entity from the Entity edit dialog
+
+Fixed issue with filepickers no longer picking files.
+
+Added option to select the PF2e Party Sheet as an actor when opening a character sheet
+
+Fixed issue with Double Right click firing twice
+
 ## Version 13.04
 
 Fixed issue with moving token no longer animating

@@ -1378,8 +1378,8 @@ export class ActionManager {
                             } else if (entity instanceof Actor) {
                                 let dest = dests[Math.floor(Math.random() * dests.length)];
 
-                                let entDest = foundry.utils.duplicate(dest);
-                                if (entDest) {
+                                let entDest = foundry.utils.duplicate(dest || {});
+                                if (dest && entDest) {
                                     if (dest.dest instanceof TileDocument) {
                                         // Find a random location within this Tile
                                         if (dest.dest instanceof TileDocument) {
