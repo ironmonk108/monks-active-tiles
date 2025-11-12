@@ -6949,7 +6949,8 @@ export class ActionManager {
                             return tile.pointWithin(midToken);
                         } else {
                             let distance = parseInt(action.data?.distance.value || action.data?.distance || 0);
-                            if (action.data.distance.var == 'sq')
+                            
+                            if (action.data.unit == 'sq')
                                 distance = (t.parent.grid.size * distance);
 
                             let dest = { x: midTile.x - hW, y: midTile.y - hH };
@@ -7006,7 +7007,8 @@ export class ActionManager {
                     return { continue: cont, tokens: tokens };
                 },
                 content: async (trigger, action) => {
-                    let unit = (action.data.distance.var == 'sq' ? 'grid square' : 'pixels');
+                    
+                    let unit = (action.data.unit == 'sq' ? 'grid square' : 'pixels');
                     let ctrl = trigger.ctrls.find(c => c.id == "entity");
                     let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous");
                     return `<span class="filter-style">Filter</span> <span class="entity-style">${entityName}</span> ${action.data.measure != 'lte' ? 'by a distance' : 'that are'} <span class="entity-style">${trigger.values.measure[action.data.measure || 'eq']}</span>${(action.data.measure != 'lt' ? ` <span class="details-style">"${action.data?.distance.value || action.data?.distance || 0}"</span> ${unit} of this Tile` : '')} ${(action.data?.continue != 'always' ? ', Continue if ' + (action.data?.continue == 'within' ? 'Any Within Distance' : 'All Within Distance') : '')}`;
