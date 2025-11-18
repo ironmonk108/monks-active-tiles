@@ -173,6 +173,7 @@ export const WithActiveTileConfig = (TileConfig) => {
                                     action: a.action,
                                     data: a.data,
                                     content: content,
+                                    tooltip: content.replace(/<[^>]*>/g, ""),
                                     disabled: trigger?.visible === false
                                 }
 
@@ -571,7 +572,7 @@ export const WithActiveTileConfig = (TileConfig) => {
             }
             event?.preventDefault();
             const options = {
-                type: type == "folder" ? "folder" : "image",
+                type: type == "folder" ? "folder" : "imagevideo",
                 wildcard: true,
                 callback: type == "folder" ? this.addFolder.bind(this) : this.addFile.bind(this),
             };
@@ -695,8 +696,8 @@ export const WithActiveTileConfig = (TileConfig) => {
             this.setPosition({ height: 'auto' });
         }
 
-        _stopSound(event) {
-            let id = event.currentTarget.closest('.sound').dataset.soundId;
+        static _stopSound(event, target) {
+            let id = target.closest('.sound').dataset.soundId;
             if (this.document.soundeffect[id]) {
                 this.document.soundeffect[id].stop();
                 delete this.document.soundeffect[id];

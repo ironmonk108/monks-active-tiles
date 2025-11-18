@@ -1,3 +1,75 @@
+## Version 13.06
+
+Fixed issue with Preload action display name
+
+Removed Terrain from Delete action tooltip
+
+Fixed Entity name Tagger action
+
+Fixed issue with listing Forien's Quest Log entries
+
+Fixed issue with Adding to Collection duplicating entries
+
+Fixed issues with triggering a Tile from a core Foundry Journal Entry
+
+Fixed issues with Delete action display
+
+Fixed using the Add Item action in PF1e
+
+Added handlebar support in Dialog content
+
+Fixed Distance filter being limited to 100
+
+Fixed issue with not being able to change the For dropdown once a specific user has been selected
+
+Sorted collection list alphabetically
+
+Fixed issue with adding a compendium item to a token
+
+Fixed issue with selecting an item from the Item Directory
+
+Fixed issue with players not able to see buttons on Dialogs
+
+Fixed issues with Dialog styling
+
+Fixed issue with passing a number to a Chat Message
+
+Fixed issue when trying to compare a boolean value
+
+Added dialog size value to the alert and confirm dialogs
+
+Added proper description to the roll table chat messages
+
+Fixed issue with clearing out previous values when changing actions
+
+Fixed issue when having a previous collection set and changing the values to something else, still picking up the original collection.
+
+Added tooltips to action list to show the full action text
+
+Added Measured Templates to Move and Show/Hide actions
+
+Fixed issue with stopping a sound that is currently playing
+
+Fixed issue with Move selecting a destination failing to find a Tiles parent properly
+
+Fixed issue with Move and negative numbers
+
+Fixed issue with applying an ammount of a condition
+
+Added showing videos when selecting animated images in the Filepicker
+
+Fixed rotation label
+
+Added return values to the Run Code action
+
+Fixed issue with global volume change action
+
+Fixed the quantity field when adding item in PF1
+
+Fixed issue with buttons disappearing when interface font size increased
+
+Fixed Variable and History list so that it scrolls properly
+
 ## Version 13.05
 
 Fixed issue when creating a token at a location based on Tagger, when that tagger location doesn't exist.

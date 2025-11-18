@@ -332,14 +332,14 @@ export class MonksActiveTiles {
             else if (val.startsWith("+ ") || val.startsWith("- "))
                 val = !options.prop;
             else
-                val = (options.prop == undefined ? true : options.operation == "assign" ? options.prop === true : options.prop);
+                val = (options.prop == undefined ? true : options.operation == "assign" ? options.prop : options.prop === true);
         } else if (typeof val == 'string' && val.endsWith('false')) {
             if (val.startsWith("="))
                 val = false;
             else if (val.startsWith("+ ") || val.startsWith("- "))
                 val = !options.prop;
             else
-                val = (options.prop == undefined ? false : options.operation == "assign" ? options.prop === false : options.prop);
+                val = (options.prop == undefined ? false : options.operation == "assign" ? options.prop : options.prop === false);
         } else {
             let context = Object.assign({
                 actor: tokens[0]?.actor,
@@ -1197,7 +1197,7 @@ export class MonksActiveTiles {
         };
         
 
-        MonksActiveTiles._execute.call({ command: action.data.code } , context);
+        return MonksActiveTiles._execute.call({ command: action.data.code } , context);
     }
 
     static async _execute(context) {
@@ -1243,7 +1243,7 @@ export class MonksActiveTiles {
             let buttonIndex = 0;
             buttons = buttons.map(b => ({
                 action: b.action ?? `button_${buttonIndex++}`,
-                type: b.submit ? "submit" : "button",
+                type: b.type ?? (b.submit ? "submit" : "button"),
                 label: b.name,
                 icon: b.icon,
                 callback: (event, button) => {
@@ -2025,8 +2025,11 @@ export class MonksActiveTiles {
                 let idx = result[type].findIndex(e => e.id == entity.id);
                 if (idx >= 0)
                     result[type].splice(idx, 1);
-            } else
+            } else {
+                if (result[type].find(e => e.id == entity.id))
+                    return;
                 result[type].push(entity);
+            }
             typeList[type] = true;
         }
 
@@ -2848,12 +2851,12 @@ export class MonksActiveTiles {
                 wrapped(...args);
         }
 
-        patchFunc("foundry.applications.sidebar.tabs.ActorDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
-        patchFunc("foundry.applications.sidebar.tabs.ItemDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
-        patchFunc("foundry.applications.sidebar.tabs.JournalDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
-        patchFunc("foundry.applications.sidebar.tabs.SceneDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
-        patchFunc("foundry.applications.sidebar.tabs.MacroDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
-        patchFunc("foundry.applications.sidebar.tabs.RollTableDirectory.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("CONFIG.ui.actors.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("CONFIG.ui.items.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("CONFIG.ui.journal.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("CONFIG.ui.scenes.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("CONFIG.ui.macros.prototype._onClickEntry", clickDocumentName, "MIXED");
+        patchFunc("CONFIG.ui.tables.prototype._onClickEntry", clickDocumentName, "MIXED");
 
         let clickCompendiumEntry = async function (wrapped, ...args) {
             let event = args[0];
@@ -2870,6 +2873,8 @@ export class MonksActiveTiles {
             } else
                 wrapped(...args);
         }
+
+        patchFunc("foundry.applications.sidebar.apps.Compendium.prototype._onClickEntry", clickCompendiumEntry, "MIXED");
 
         patchFunc("foundry.helpers.interaction.ClientKeybindings.prototype._registerCoreKeybindings", function (wrapped, ...args) {
             let result = wrapped(...args);
@@ -2930,8 +2935,6 @@ export class MonksActiveTiles {
 
             return result
         });
-
-        patchFunc("foundry.applications.sidebar.apps.Compendium.prototype._onClickEntry", clickCompendiumEntry, "MIXED");
 
         let leftClick = async function (wrapped, ...args) {
             let event = args[0];
@@ -3544,7 +3547,7 @@ export class MonksActiveTiles {
 
                         debug('Playing', data.src);
                         if (data.src) {
-                            foundry.audio.AudioHelper.play({ src: data.src, volume: (data.fade > 0 ? 0 : volume), loop: data.loop }, false).then((sound) => {
+                            foundry.audio.AudioHelper.play({ src: data.src, volume: (data.fade > 0 ? 0 : volume * getVolume()), loop: data.loop }, false).then((sound) => {
                                 if (data.fade > 0)
                                     sound.fade(volume * getVolume(), { duration: data.fade * 1000 });
                                 if (tile.soundeffect == undefined)
@@ -3973,7 +3976,8 @@ export class MonksActiveTiles {
             } break;
             case 'globalvolume': {
                 if (data.users.includes(game.user.id)) {
-                    $(`#global-volume input[name="${data.volumetype}"]`).val(data.volume).change();
+                    if ($(`.global-volume [name="${data.volumetype}"]`).get(0))
+                        $(`.global-volume [name="${data.volumetype}"]`).get(0).value = data.volume;
                 }
             } break;
         }
@@ -3999,7 +4003,8 @@ export class MonksActiveTiles {
             let waitingInput = MonksActiveTiles.waitingInput;
             let waitingField = MonksActiveTiles.waitingInput.waitingfield;
             let restrict = waitingField.data('restrict');
-            if (restrict && !restrict(entity)) {
+            let tileDocument = waitingInput.options.parent.options.document;
+            if (restrict && !restrict(entity, tileDocument)) {
                 ui.notifications.error(i18n("MonksActiveTiles.msg.invalid-entity"));
                 return;
             }
@@ -6132,7 +6137,7 @@ Hooks.on("dropCanvasData", async (canvas, data, options, test) => {
                     "minrequired": 0,
                     "chance": 100,
                     "actions": [
-                        { "action": "distance", "data": { "measure": "eq", "distance": { "value": 1, "var": "sq" }, "continue": "always", "entity": "" }, "id": "UugwKEORHARYwcS2" },
+                        { "action": "distance", "data": { "measure": "eq", "distance": 1, "unit": "sq", "continue": "always", "entity": "" }, "id": "UugwKEORHARYwcS2" },
                         { "action": "exists", "data": { "entity": "", "collection": "tokens", "count": "> 0", "none": "NotCloseEnough" }, "id": "Tal2G8WXfo3xmL5U" },
                         { "action": "first", "id": "dU81VsGaWmAgLAYX" },
                         { "action": "showhide", "data": { "entity": { "id": "tile", "name": "This Tile" }, "hidden": "hide" }, "id": "UnujCziObnW2Axkx" },
@@ -6465,6 +6470,10 @@ Hooks.on("renderJournalSheet", (sheet, html, data) => {
 });
 
 Hooks.on("renderJournalPageSheet", (sheet, html, data) => {
+    $("a.tile-trigger-link", html).unbind("click").click(MonksActiveTiles._onClickTileLink.bind(sheet));
+});
+
+Hooks.on("renderJournalEntryPageSheet", (sheet, html, data) => {
     $("a.tile-trigger-link", html).unbind("click").click(MonksActiveTiles._onClickTileLink.bind(sheet));
 });
 

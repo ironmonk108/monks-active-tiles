@@ -319,6 +319,8 @@ body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .act
 
 .matt-tab.tab {
     gap: 0.2rem;
+    overflow-y: auto;
+    max-height: 570px;
 }
 
 .alter-tags {
@@ -571,45 +573,45 @@ body.system-CoC7 .multiple-dropdown .multiple-dropdown-option {
 
 .tile-config.monks-active-tiles .tab.triggers .actions-group header,
 .tile-config.monks-active-tiles .tab.triggers .actions-group ol {
-    grid-template-columns: 23.8rem 3rem;
+    grid-template-columns: 88% 12%;
 }
 
 .tile-config.monks-active-tiles .tab.triggers .sounds-group header,
 .tile-config.monks-active-tiles .tab.triggers .sounds-group ol {
-    grid-template-columns: 24rem 2rem;
+    grid-template-columns: 88% 12%;
 }
 
 .tile-config.monks-active-tiles .tab.triggers .images-group header {
-    grid-template-columns: 27rem;
+    grid-template-columns: 100%;
 }
 .tile-config.monks-active-tiles .tab.triggers .images-group ol {
-    grid-template-columns: 24rem 3rem;
+    grid-template-columns: 88% 12%;
 }
 
 #tile-history .history-group header,
 #tile-history .history-group ol {
-    grid-template-columns: 10rem 9rem 9rem 10rem 2rem;
+    grid-template-columns: 25% 28% 16% 25% 5%;
 }
 
 #trigger-variables .variable-group header {
-    grid-template-columns: 12rem 28rem;
+    grid-template-columns: 30% 70%;
 }
 
 #trigger-variables .variable-group ol {
-    grid-template-columns: 12rem 27rem 1rem;
+    grid-template-columns: 30% 66% 4%;
 }
 
 #trigger-action .file-list header {
-    grid-template-columns: 27rem;
+    grid-template-columns: 100%;
     justify-items: flex-end;
 }
 #trigger-action .file-list ol {
-    grid-template-columns: 24rem 3rem;
+    grid-template-columns: 89% 11%;
 }
 
 #trigger-action .buttons-list header,
 #trigger-action .buttons-list ol {
-    grid-template-columns: 11rem 9rem 3rem 3rem 3rem;
+    grid-template-columns: 35% 32% 10% 10% 10%;
 }
 
 #trigger-action .buttons-list ol {
@@ -624,6 +626,7 @@ body.system-CoC7 .multiple-dropdown .multiple-dropdown-option {
 #trigger-action .file-list header,
 #trigger-action .buttons-list header {
     height: 30px;
+    line-height: 25px;
     margin: 2px 0;
     padding: 0;
     align-items: center;
@@ -749,4 +752,9 @@ body.theme-light #trigger-action:not(.themed) .buttons-list header,
 
 .wall-config button.toggle.active {
     background: var(--button-hover-background-color);
+}
+
+.monks-active-tiles-dialog.dialog .dialog-form,
+.monks-active-tiles-dialog.dialog .dialog-content {
+    flex: 1;
 }

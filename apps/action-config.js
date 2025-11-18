@@ -196,11 +196,12 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
         $('select[name="action"]', this.element).change(function () {
             //clear out these before saving the new information so we don't get data bleed through
             if (that.options.action.data) {
-                that.options.action.location = {};
-                that.options.action.entity = {};
-                that.options.action.item = {};
-                that.options.action.actor = {};
-                that.options.action.token = {};
+                var data = that.options.action.data;
+                delete data.location;
+                delete data.entity;
+                delete data.item;
+                delete data.actor;
+                delete data.token;
             }
             that.changeAction.call(that);
         });
@@ -1271,7 +1272,10 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                                         value: JSON.stringify(data[ctrl.id]),
                                         custom: "true",
                                         label: MonksActiveTiles.forPlayersName(data[ctrl.id] || ctrl.defvalue),
-                                        selected: true
+                                        selected: true,
+                                        data: {
+                                            "value": data[ctrl.id]
+                                        }
                                     });
                                 }
                             }
@@ -1306,7 +1310,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                     //so this is the fun one, when the button is pressed, I need to minimize the windows, and wait for a selection
                     fieldData.datavalue = { 'restrict': ctrl.restrict, 'type': ctrl.subtype, deftype: ctrl.defaultType, placeholder: ctrl.placeholder, value: data[ctrl.id] };
                     let default_placeholder = ctrl.subtype == 'entity' ? 'Please select an entity' : 'Please select a location';
-                    fieldData.label = (ctrl.subtype == 'entity' ? await MonksActiveTiles.entityName(data[ctrl.id], ctrl.defaultType) : await MonksActiveTiles.locationName(data[ctrl.id])) || `<span class="placeholder-style">${i18n(ctrl.placeholder) || default_placeholder}</span>`;
+                    fieldData.label = (ctrl.subtype == 'entity' ? await MonksActiveTiles.entityName(data[ctrl.id], (data[ctrl.id]?.id == "previous" ? data.collection : null) || ctrl.defaultType || "tokens") : await MonksActiveTiles.locationName(data[ctrl.id])) || `<span class="placeholder-style">${i18n(ctrl.placeholder) || default_placeholder}</span>`;
 
                     if (!options.hide.includes('select')) {
                         fieldData.buttons.push({
@@ -1436,6 +1440,16 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             let html = await foundry.applications.handlebars.renderTemplate("modules/monks-active-tiles/templates/action-field.hbs", fieldData);
             let field = $(html);
 
+            if (fieldData.options) {
+                // Find any options that have data attribute set and add that to the html
+                for (let optionData of fieldData.options) {
+                    if (optionData.data) {
+                        let optionElem = $(`option[value='${optionData.value}']`, field);
+                        optionElem.data(optionData.data);
+                    }
+                }
+            }
+
             $('.action-controls', this.element).append(field);
 
             if (ctrl.type == "filepicker" && ctrl.subtype == "html") {
@@ -1446,6 +1460,17 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
                         filepicker.extensions = Object.keys(CONST.HTML_FILE_EXTENSIONS).map(t => `.${t}`);
                         filepicker.browse();
                     }, 100);
+                });
+            }
+
+            if (ctrl.type == "list") {
+                $("select", field).on("change", async (event) => {
+                    let select = $(event.currentTarget);
+                    let option = $('option:selected', select);
+                    if (option.data("value"))
+                        select.data("value", option.data("value"));
+                    else
+                        select.removeData('value');
                 });
             }
 

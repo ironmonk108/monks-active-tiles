@@ -142,7 +142,7 @@ export class ActionManager {
                         type: "select",
                         subtype: "position",
                         options: { show: ['token', 'players', 'previous', 'tagger'] },
-                        restrict: (entity, document) => { return ((entity instanceof foundry.canvas.placeables.Tile || entity instanceof foundry.canvas.placeables.Token) && document.parent.id == entity.parent.id) || document.parent.id == entity.id; },
+                        restrict: (entity, document) => { return ((entity instanceof foundry.canvas.placeables.Tile || entity instanceof foundry.canvas.placeables.Token) && document?.parent?.id == entity?.document?.parent?.id) || document?.parent?.id == entity?.id; },
                         required: true,
                         placeholder: 'Select a location or Tile'
                     },
@@ -256,7 +256,7 @@ export class ActionManager {
                         type: "select",
                         subtype: "location",
                         options: { show: ['token', 'players', 'previous', 'tagger'] },
-                        restrict: (entity, document) => { return ((entity instanceof foundry.canvas.placeables.Tile || entity instanceof foundry.canvas.placeables.Token) && document.parent.id == entity.parent.id) || document.parent.id == entity.id; },
+                        restrict: (entity, document) => { return ((entity instanceof foundry.canvas.placeables.Tile || entity instanceof foundry.canvas.placeables.Token) && document?.parent?.id == entity?.document?.parent?.id) || document?.parent?.id == entity?.id; },
                         required: true,
                         placeholder: 'Select a location or Tile'
                     },
@@ -461,17 +461,19 @@ export class ActionManager {
                         }
 
                         if (entDest.x && typeof entDest.x == "string" && entDest.x.indexOf('-') > 1) {
-                            let parts = entDest.x.split("-");
-                            let min = parseInt(parts[0]);
-                            let max = parseInt(parts[1]);
-                            entDest.x = min + (Math.random() * (max - min));
+                            entDest.x = entDest.x.replace(/(\d+)-(\d+)/g, function (match, p1, p2) {
+                                let min = parseInt(p1);
+                                let max = parseInt(p2);
+                                return min + parseInt(Math.random() * (max - min));
+                            });
                         }
 
                         if (entDest.y && typeof entDest.y == "string" && entDest.y.indexOf('-') > 1) {
-                            let parts = entDest.y.split("-");
-                            let min = parseInt(parts[0]);
-                            let max = parseInt(parts[1]);
-                            entDest.y = min + (Math.random() * (max - min));
+                            entDest.y = entDest.y.replace(/(\d+)-(\d+)/g, function (match, p1, p2) {
+                                let min = parseInt(p1);
+                                let max = parseInt(p2);
+                                return min + parseInt(Math.random() * (max - min));
+                            });
                         }
 
                         entDest.x = parseInt(await getValue(entDest.x, args, tokendoc, { prop: tokendoc.x }));
@@ -723,7 +725,8 @@ export class ActionManager {
                                 entity instanceof foundry.canvas.placeables.Drawing ||
                                 entity instanceof foundry.canvas.placeables.AmbientLight ||
                                 entity instanceof foundry.canvas.placeables.AmbientSound ||
-                                entity instanceof foundry.canvas.placeables.Note);
+                                entity instanceof foundry.canvas.placeables.Note ||
+                                entity instanceof foundry.canvas.placeables.MeasuredTemplate);
                         },
                         defaultType: "tokens"
                     },
@@ -734,7 +737,7 @@ export class ActionManager {
                         subtype: "either",
                         check: true,
                         options: { show: ['token', 'previous', 'tagger', 'origin'] },
-                        restrict: (entity, document) => { return (entity instanceof foundry.canvas.placeables.Tile && document.parent.id == entity.parent.id) || document.parent.id == entity.id; },
+                        restrict: (entity, document) => { return (entity instanceof foundry.canvas.placeables.Tile && document?.parent?.id == entity?.document?.parent?.id) || document?.parent?.id == entity?.id; },
                         required: true
                     },
                     {
@@ -825,17 +828,19 @@ export class ActionManager {
                                 continue;
 
                             if (entDest.x && typeof entDest.x == "string" && entDest.x.indexOf('-') > 1) {
-                                let parts = entDest.x.split("-");
-                                let min = parseInt(parts[0]);
-                                let max = parseInt(parts[1]);
-                                entDest.x = min + (Math.random() * (max - min));
+                                entDest.x = entDest.x.replace(/(\d+)-(\d+)/g, function (match, p1, p2) {
+                                    let min = parseInt(p1);
+                                    let max = parseInt(p2);
+                                    return min + parseInt(Math.random() * (max - min));
+                                });
                             }
 
                             if (entDest.y && typeof entDest.y == "string" && entDest.y.indexOf('-') > 1) {
-                                let parts = entDest.y.split("-");
-                                let min = parseInt(parts[0]);
-                                let max = parseInt(parts[1]);
-                                entDest.y = min + (Math.random() * (max - min));
+                                entDest.y = entDest.y.replace(/(\d+)-(\d+)/g, function (match, p1, p2) {
+                                    let min = parseInt(p1);
+                                    let max = parseInt(p2);
+                                    return min + parseInt(Math.random() * (max - min));
+                                });
                             }
 
                             /*
@@ -853,8 +858,8 @@ export class ActionManager {
                                 (typeof entDest.y == "string" && (entDest.y.startsWith("+") || entDest.y.startsWith("-")))) {
                                 location.id = "origin";
                             }*/
-                            let relX = (typeof entDest.x == "string" && (entDest.x.startsWith("+") || entDest.x.startsWith("-")));
-                            let relY = (typeof entDest.x == "string" && (entDest.y.startsWith("+") || entDest.y.startsWith("-")));
+                            //let relX = (typeof entDest.x == "string" && (entDest.x.startsWith("+") || entDest.x.startsWith("-")));
+                            //let relY = (typeof entDest.y == "string" && (entDest.y.startsWith("+") || entDest.y.startsWith("-")));
                             entDest.x = parseInt(await getValue(entDest.x, args, entity, { prop: entity.x }));
                             entDest.y = parseInt(await getValue(entDest.y, args, entity, { prop: entity.y }));
 
@@ -1071,7 +1076,8 @@ export class ActionManager {
                 content: async (trigger, action) => {
                     let ctrl = trigger.ctrls.find(c => c.id == "entity");
                     let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous");
-                    return `<span class="action-style">${i18n(trigger.name)}</span> <span class="entity-style">${entityName}</span> rotate to <span class="details-style">"${action.data.rotation}"</span>`;
+                    let textMovement = action.data.rotation.startsWith("+ ") || action.data.rotation.startsWith("- ") ? "by" : "to";
+                    return `<span class="action-style">${i18n(trigger.name)}</span> <span class="entity-style">${entityName}</span> rotate ${textMovement} <span class="details-style">"${action.data.rotation}"</span>`;
                 }
             },
             'showhide': {
@@ -1086,7 +1092,14 @@ export class ActionManager {
                         subtype: "entity",
                         check: true,
                         options: { show: ['tile', 'token', 'within', 'players', 'previous', 'tagger'] },
-                        restrict: (entity) => { return (entity instanceof foundry.canvas.placeables.Token || entity instanceof foundry.canvas.placeables.Tile || entity instanceof foundry.canvas.placeables.Drawing); }
+                        restrict: (entity) => {
+                            return (
+                                entity instanceof foundry.canvas.placeables.Token ||
+                                entity instanceof foundry.canvas.placeables.Tile ||
+                                entity instanceof foundry.canvas.placeables.Drawing ||
+                                entity instanceof foundry.canvas.placeables.MeasuredTemplate
+                            );
+                        }
                     },
                     {
                         id: "collection",
@@ -1126,16 +1139,16 @@ export class ActionManager {
                         'toggle': "MonksActiveTiles.hidden.toggle"
                     },
                     'collection': {
-                        'tokens': "Tokens",
+                        'drawings': "Drawings",
                         'tiles': "Tiles",
-                        'drawings': "Drawings"
+                        'tokens': "Tokens",
                     }
                 },
                 fn: async (args = {}) => {
                     const { action } = args;
                     //find the item in question
                     let entities = await MonksActiveTiles.getEntities(args, action.data?.collection || "tokens");
-                    entities = entities.filter(e => { return (e instanceof TokenDocument || e instanceof TileDocument || e instanceof DrawingDocument); });
+                    entities = entities.filter(e => { return (e instanceof TokenDocument || e instanceof TileDocument || e instanceof DrawingDocument || e instanceof MeasuredTemplateDocument); });
 
                     if (entities && entities.length > 0) {
                         //set or toggle visible
@@ -1200,7 +1213,7 @@ export class ActionManager {
                         type: "select",
                         subtype: "either",
                         options: { show: ['tile', 'previous', 'tagger'] },
-                        restrict: (entity, document) => { return (entity instanceof foundry.canvas.placeables.Tile && document.parent.id == entity.parent.id) || document.parent.id == entity.id; },
+                        restrict: (entity, document) => { return (entity instanceof foundry.canvas.placeables.Tile && document?.parent?.id == entity?.document?.parent?.id) || document?.parent?.id == entity?.id; },
                         required: true
                     },
                     {
@@ -1517,7 +1530,7 @@ export class ActionManager {
                         name: "MonksActiveTiles.ctrl.select-coordinates",
                         type: "select",
                         subtype: "either",
-                        restrict: (entity, document) => { return (entity instanceof foundry.canvas.placeables.Tile && document.parent.id == entity.parent.id) || document.parent.id == entity.id; },
+                        restrict: (entity, document) => { return (entity instanceof foundry.canvas.placeables.Tile && document?.parent?.id == entity?.document?.parent?.id) || document?.parent?.id == entity?.id; },
                         required: true
                     },
                     {
@@ -1631,7 +1644,10 @@ export class ActionManager {
                         subtype: "entity",
                         options: { show: ['tile', 'within', 'previous', 'tagger'] },
                         restrict: (entity) => {
-                            return (entity instanceof foundry.canvas.placeables.Tile || entity instanceof foundry.canvas.placeables.AmbientLight || entity instanceof foundry.canvas.placeables.AmbientSound || entity.constructor.name == "Terrain");
+                            return (entity instanceof foundry.canvas.placeables.Tile
+                                || entity instanceof foundry.canvas.placeables.AmbientLight
+                                || entity instanceof foundry.canvas.placeables.AmbientSound
+                            );
                         },
                         check: true,
                         defvalue: 'tile',
@@ -1683,7 +1699,7 @@ export class ActionManager {
 
                     for (let entity of entities) {
                         if (entity) {
-                            if (entity instanceof AmbientLightDocument || entity instanceof AmbientSoundDocument || entity._object?.constructor.name == "Terrain") {
+                            if (entity instanceof AmbientLightDocument || entity instanceof AmbientSoundDocument) {
                                 let hidden = (action.data.activate == 'toggle' ? !entity.hidden : (action.data.activate == 'previous' ? !value.activate : action.data.activate != 'activate'));
                                 MonksActiveTiles.batch.add("update", entity, { hidden: hidden });
                             } else if (entity instanceof TileDocument) {
@@ -3028,8 +3044,8 @@ export class ActionManager {
                         if (typeof action.data.text == "string" && (action.data.text.startsWith('/') || action.data.text.startsWith('[[/'))) {
                             ui.chat.processMessage(action.data.text);
                         } else {
-                            let content = await getValue(action.data.text, args, entity, { speaker });
-                            let flavor = await getValue(action.data.flavor, args, entity, { speaker });
+                            let content = (await getValue(action.data.text, args, entity, { speaker })) + "";
+                            let flavor = (await getValue(action.data.flavor, args, entity, { speaker })) + "";
 
                             let showto = action.data.showto || "everyone";
                             let showUsers = MonksActiveTiles.getForPlayers(showto, args);
@@ -3387,7 +3403,7 @@ export class ActionManager {
 
                                 for (let r of foundry.utils.duplicate(tblResults.results)) {
                                     let original = tblResults.results.find(res => res.id == r._id);
-                                    r.text = (await original?.getHTML()) || r.text;
+                                    r.details = (await original?.getHTML()) || r.text;
                                     r.icon = r.icon || r.img;
                                     resultData.results.push(r);
                                 }
@@ -3609,7 +3625,7 @@ export class ActionManager {
                                                 let newVal = (action.data?.altereffect.startsWith("+") ? existing.value + value : value);
                                                 await game.pf2e.ConditionManager.updateConditionValue(existing.id, token.object, newVal);
                                             } else {
-                                                await token.actor.increaseCondition(effect.slug, { min: value, max: value });
+                                                await token.actor.increaseCondition(effect.slug, { value });
                                             }
                                         }
                                     } else {
@@ -4194,12 +4210,19 @@ export class ActionManager {
                                         const itemData = item.toObject();
                                         if (action.data?.quantity) {
                                             let quantity = await getValue(action.data?.quantity, args, item);
-                                            let quantityName = item.system.quantity != undefined ? "quantity" : item.system.value != undefined ? "value" : item.system.eqt != undefined ? "eqt.count" : null;
-                                            if (quantityName) {
-                                                let valueName = `system.${quantityName}.value`;
-                                                let useValue = foundry.utils.getProperty(item, valueName) != undefined;
+                                            quantity = parseInt(quantity);
+                                            let quantityName = null;
+                                            if (item.system.quantity?.value != undefined)
+                                                quantityName = "quantity.value";
+                                            else if (item.system.quantity != undefined)
+                                                quantityName = "quantity";
+                                            else if (item.system.value != undefined)
+                                                quantityName = "value";
+                                            else if (item.system.eqt != undefined)
+                                                quantityName = "eqt.count";
 
-                                                foundry.utils.setProperty(itemData, `system.${quantityName}`, useValue ? { value: quantity } : quantity);
+                                            if (quantityName) {
+                                                foundry.utils.setProperty(itemData, `system.${quantityName}`, quantity);
                                             }
                                         }
                                         let hasAdded = false;
@@ -4211,9 +4234,13 @@ export class ActionManager {
                                             }
                                         }
                                         if (!hasAdded) {
-                                            let sheet = actor.sheet;
                                             const document = await Item.fromDropData({ type: "Item", uuid: item.uuid, data: itemData });
-                                            sheet._onDropItem({ preventDefault: () => { }, target: { closest: () => { return false } } }, document);
+                                            if (game.system.id == "pf1") {
+                                                actor.createEmbeddedDocuments("Item", [document]);
+                                            } else {
+                                                let sheet = actor.sheet;
+                                                sheet._onDropItem({ preventDefault: () => { }, target: { closest: () => { return false } } }, game.system.id == "pf2e" ? { data: itemData } : document);
+                                            }
                                         }
 
                                         //batch.add("create", item.constructor, itemData, { parent: actor });
@@ -4457,11 +4484,11 @@ export class ActionManager {
 
                     },
                     'collection': {
-                        'notes': "Notes",
-                        'tokens': "Tokens",
-                        'journal': "Journal Entry",
-                        'scenes': "Scenes",
                         'actors': "Actors",
+                        'journal': "Journal Entry",
+                        'notes': "Notes",
+                        'scenes': "Scenes",
+                        'tokens': "Tokens",
                     }
                 },
                 fn: async (args = {}) => {
@@ -5570,13 +5597,12 @@ export class ActionManager {
                                 entity instanceof foundry.canvas.placeables.Note ||
                                 entity instanceof foundry.canvas.placeables.AmbientLight ||
                                 entity instanceof foundry.canvas.placeables.AmbientSound ||
-                                entity instanceof foundry.canvas.placeables.MeasuredTemplate ||
-                                entity.constructor.name == "Terrain");
+                                entity instanceof foundry.canvas.placeables.MeasuredTemplate);
                         },
                         check: true,
-                        defaultType: 'tiles',
+                        defaultType: 'tokens',
                         placeholder: 'Please select an entity',
-                        help: 'You may delete Tokens, Tiles, Walls, Drawings, Notes, Lights, Sounds or Terrain'
+                        help: 'You may delete Tokens, Tiles, Walls, Drawings, Notes, Lights, or Sounds'
                     },
                     {
                         id: "collection",
@@ -5591,19 +5617,18 @@ export class ActionManager {
                             let entity = $('input[name="data.entity"]', app.element).data("value") || {};
                             return entity?.id == 'previous';
                         },
-                        defvalue: 'tiles'
+                        defvalue: 'tokens'
                     }
                 ],
                 values: {
                     'collection': {
-                        'notes': "Notes",
                         'drawings': "Drawings",
-                        'terrain': "Terrain",
+                        'lighting': "Lights",
+                        'notes': "Notes",
+                        'sounds': "Sounds",
                         'tiles': "Tiles",
                         'tokens': "Tokens",
                         'walls': "Walls",
-                        'lighting': "Lights",
-                        'sounds': "Sounds",
                     }
                 },
                 fn: async (args = {}) => {
@@ -5624,7 +5649,7 @@ export class ActionManager {
                 },
                 content: async (trigger, action) => {
                     let ctrl = trigger.ctrls.find(c => c.id == "entity");
-                    let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous", action.data?.collection || ctrl?.defaultType || "tiles");
+                    let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous", (action.data?.entity.id == "previous" ? action.data?.collection : null) || ctrl?.defaultType || "tokens");
                     return `<span class="action-style">${i18n(trigger.name)}</span> <span class="entity-style">${entityName}</span>`;
                 }
             },
@@ -5789,7 +5814,8 @@ export class ActionManager {
                     let showUsers = MonksActiveTiles.getForPlayers(showfor, args);
 
                     if (showUsers.includes(game.user.id)) {
-                        $(`#global-volume input[name="${action.data.volumetype}"]`).val(action.data.volume).change();
+                        if ($(`.global-volume [name="${action.data.volumetype}"]`).get(0))
+                            $(`.global-volume [name="${action.data.volumetype}"]`).get(0).value = action.data.volume;
                         showUsers = showUsers.filter(u => u != game.user.id);
                     }
                     if (showUsers.length) {
@@ -5915,17 +5941,11 @@ export class ActionManager {
                         id: "width",
                         name: "MonksActiveTiles.ctrl.width",
                         type: "text",
-                        conditional: (app) => {
-                            return $('select[name="data.dialogtype"]', app.element).val() == 'custom';
-                        },
                     },
                     {
                         id: "height",
                         name: "MonksActiveTiles.ctrl.height",
                         type: "text",
-                        conditional: (app) => {
-                            return $('select[name="data.dialogtype"]', app.element).val() == 'custom';
-                        },
                     },
                     {
                         id: "yes",
@@ -5990,19 +6010,20 @@ export class ActionManager {
                     let title = action.data.title;
                     let content = action.data.content;
 
+                    let context = {
+                        actor: tokens[0]?.actor?.toObject(),
+                        token: tokens[0]?.toObject(),
+                        tile: tile,
+                        variable: foundry.utils.getProperty(tile, "flags.monks-active-tiles.variables") || {},
+                        user: game.users.get(userId),
+                        players: game.users,
+                        value: value,
+                        scene: canvas.scene,
+                        method: method,
+                        change: change
+                    };
+
                     if (action.data.file) {
-                        let context = {
-                            actor: tokens[0]?.actor?.toObject(),
-                            token: tokens[0]?.toObject(),
-                            tile: tile,
-                            variable: foundry.utils.getProperty(tile, "flags.monks-active-tiles.variables") || {},
-                            user: game.users.get(userId),
-                            players: game.users,
-                            value: value,
-                            scene: canvas.scene,
-                            method: method,
-                            change: change
-                        };
                         if (!Handlebars.partials.hasOwnProperty(action.data.file) && action.data.file?.startsWith("http")) {
                             let html = await fetch(action.data.file);
                             let text = await html.text();
@@ -6015,6 +6036,9 @@ export class ActionManager {
                             });
                         } else
                             content = await foundry.applications.handlebars.renderTemplate(action.data.file, context);
+                    } else {
+                        const compiled = Handlebars.compile(content);
+                        content = compiled(context, { allowProtoMethodsByDefault: true, allowProtoPropertiesByDefault: true }).trim();
                     }
 
                     let options = {};
@@ -6083,7 +6107,7 @@ export class ActionManager {
                             options,
                             classes: action.data.classes,
                             closeGoto,
-                            buttons: action.data.buttons
+                            buttons: buttons
                         });
                     }
 
@@ -6330,7 +6354,7 @@ export class ActionManager {
                 },
                 content: async (trigger, action) => {
                     let ctrl = trigger.ctrls.find(c => c.id == "sceneid");
-                    let entityName = await MonksActiveTiles.entityName(action.data?.sceneid || ctrl?.defvalue || "previous", 'scene');
+                    let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous", 'scene');
                     return `<span class="action-style">${i18n(trigger.name)}</span> <span class="entity-style">"${entityName}"</span> for <span class="value-style">&lt;${MonksActiveTiles.forPlayersName(action.data?.for || "trigger")}&gt;</span>`;
                 }
             },
@@ -6880,7 +6904,10 @@ export class ActionManager {
                         conditional: (app) => {
                             return $('select[name="data.measure"]', app.element).val() != 'lt';
                         },
-                        defvalue: 1
+                        defvalue: 1,
+                        step: 1,
+                        min: 1,
+                        max: 99999
                     },
                     {
                         id: "unit",
@@ -6949,7 +6976,7 @@ export class ActionManager {
                             return tile.pointWithin(midToken);
                         } else {
                             let distance = parseInt(action.data?.distance.value || action.data?.distance || 0);
-                            if (action.data.distance.var == 'sq')
+                            if (action.data.unit == 'sq')
                                 distance = (t.parent.grid.size * distance);
 
                             let dest = { x: midTile.x - hW, y: midTile.y - hH };
@@ -7006,7 +7033,7 @@ export class ActionManager {
                     return { continue: cont, tokens: tokens };
                 },
                 content: async (trigger, action) => {
-                    let unit = (action.data.distance.var == 'sq' ? 'grid square' : 'pixels');
+                    let unit = (action.data.unit == 'sq' ? 'grid square' : 'pixels');
                     let ctrl = trigger.ctrls.find(c => c.id == "entity");
                     let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous");
                     return `<span class="filter-style">Filter</span> <span class="entity-style">${entityName}</span> ${action.data.measure != 'lte' ? 'by a distance' : 'that are'} <span class="entity-style">${trigger.values.measure[action.data.measure || 'eq']}</span>${(action.data.measure != 'lt' ? ` <span class="details-style">"${action.data?.distance.value || action.data?.distance || 0}"</span> ${unit} of this Tile` : '')} ${(action.data?.continue != 'always' ? ', Continue if ' + (action.data?.continue == 'within' ? 'Any Within Distance' : 'All Within Distance') : '')}`;
@@ -7448,8 +7475,8 @@ export class ActionManager {
                                 entity instanceof foundry.canvas.placeables.Note ||
                                 entity instanceof foundry.canvas.placeables.AmbientLight ||
                                 entity instanceof foundry.canvas.placeables.AmbientSound ||
-                                entity instanceof foundry.canvas.placeables.Wall ||
-                                entity.constructor.name == "Terrain");
+                                entity instanceof foundry.canvas.placeables.Wall
+                            );
                         }
                     },
                     {
@@ -7487,15 +7514,16 @@ export class ActionManager {
                         'journal': "Journal Entries",
                         'tiles': "Tiles",
                         'tokens': "Tokens",
-                        'walls': "Walls",
-                        'users': "Users"
+                        'users': "Users",
+                        'walls': "Walls"
                     }
                 },
                 group: "filters",
                 fn: async (args = {}) => {
                     let { action, value, tokens, tile, method, change, userId } = args;
 
-                    let collection = action.data?.collection || "tokens";
+                    let collection = "tokens";
+                    if (action.data.entity.id == "previous" && action.data?.collection) collection = action.data?.collection;
                     if (action.data.entity.id == "tile") collection = 'tiles';
 
                     let entities = await MonksActiveTiles.getEntities(args, collection);
@@ -7598,6 +7626,8 @@ export class ActionManager {
 
                     let entities = await MonksActiveTiles.getEntities(args, action.data?.collection || "tokens");
 
+                    let resultItems = [];
+
                     let result = await asyncFilter(entities, async (entity) => {
                         if (!entity.actor)
                             return false;
@@ -7631,10 +7661,14 @@ export class ActionManager {
                             cando = (filteredItems.length > 0);
                         }
 
+                        if (!!cando) {
+                            resultItems.concat(filteredItems);
+                        }
+
                         return !!cando;
                     });
 
-                    return { tokens: result };
+                    return { tokens: result, items: resultItems };
                 },
                 content: async (trigger, action) => {
                     let ctrl = trigger.ctrls.find(c => c.id == "entity");
@@ -8369,7 +8403,7 @@ Hooks.on("setupTileActions", (app) => {
                         let result = {};
 
                         for (let quest of fqlAPI.DB.getAllQuests()) {
-                            result[quest._id] = quest._name;
+                            result[quest.id] = quest.name;
                         }
 
                         return result;
@@ -8576,12 +8610,12 @@ Hooks.on("setupTileActions", (app) => {
                 },
                 'collection': {
                     'drawings': "Drawings",
+                    'lights': "Lights",
+                    'notes': "Notes",
+                    'sounds': "Sounds",
                     'tiles': "Tiles",
                     'tokens': "Tokens",
                     'walls': "Walls",
-                    'notes': "Notes",
-                    'lights': "Lights",
-                    'sounds': "Sounds",
                 }
             },
             group: 'tagger',
@@ -8626,7 +8660,7 @@ Hooks.on("setupTileActions", (app) => {
             },
             content: async (trigger, action) => {
                 let ctrl = trigger.ctrls.find(c => c.id == "entity");
-                let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous");
+                let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous", (action.data?.entity == "previous" ? action.data?.collection : null) || "tiles");
                 return `<span class="action-style">Tagger</span> <span class="details-style">"${i18n(trigger.values.state[action.data?.state])}"</span> <span class="value-style">&lt;${action.data.tag}&gt;</span> to <span class="entity-style">${entityName}</span>`;
             }
         });
