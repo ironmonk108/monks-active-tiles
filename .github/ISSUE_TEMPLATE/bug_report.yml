@@ -82,9 +82,7 @@ body:
       label: Troubleshooting
       options:
         - label: I checked the browser console (F12) for errors
-          required: true
         - label: I used **Find the Culprit** to rule out module conflicts
-          required: true
 
   - type: textarea
     id: context
