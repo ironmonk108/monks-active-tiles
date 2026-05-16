@@ -1,0 +1,94 @@
+name: Bug Report
+description: Create a report to help us improve
+title: ""
+labels: ["bug"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        > ⚠️ **Before submitting:** Please give your issue a descriptive title above.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Tell us how to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+
+  - type: input
+    id: foundry-version
+    attributes:
+      label: Foundry Version
+      placeholder: "e.g. v12"
+
+  - type: input
+    id: system
+    attributes:
+      label: Game System
+      placeholder: "e.g. D&D 5e, Pathfinder 2e"
+    validations:
+      required: true
+
+  - type: input
+    id: module-version
+    attributes:
+      label: Module Version
+      placeholder: "e.g. 1.4.2"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: troubleshooting
+    attributes:
+      label: Troubleshooting
+      options:
+        - label: I checked the browser console (F12) for errors
+          required: true
+        - label: I used **Find the Culprit** to rule out module conflicts
+          required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
