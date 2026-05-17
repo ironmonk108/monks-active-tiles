@@ -89,3 +89,11 @@ body:
     attributes:
       label: Additional context
       description: Add any other context about the problem here.
+
+  - type: checkboxes
+    id: duplicates
+    attributes:
+      label: Duplicate check
+      options:
+        - label: I have searched the existing issues to make sure this is not a duplicate
+          required: true
