@@ -2747,7 +2747,7 @@ export class ActionManager {
                         name: "Light Restriction",
                         list: () => {
                             let senseTypes = { nothing: "--No Change--", toggle: "--Toggle--" };
-                            senseTypes = Object.assign(senseTypes, Object.keys(CONST.WALL_SENSE_TYPES).reduce((obj, key) => {
+                            senseTypes = Object.assign(senseTypes, Object.keys(CONST.EDGE_SENSE_TYPES).reduce((obj, key) => {
                                 obj[key] = game.i18n.localize(`WALL.SenseTypes.${key}`);
                                 return obj;
                             }, {}));
@@ -2761,7 +2761,7 @@ export class ActionManager {
                         name: "Sight Restriction",
                         list: () => {
                             let senseTypes = { nothing: "--No Change--", toggle: "--Toggle--" };
-                            senseTypes = Object.assign(senseTypes, Object.keys(CONST.WALL_SENSE_TYPES).reduce((obj, key) => {
+                            senseTypes = Object.assign(senseTypes, Object.keys(CONST.EDGE_SENSE_TYPES).reduce((obj, key) => {
                                 obj[key] = game.i18n.localize(`WALL.SenseTypes.${key}`);
                                 return obj;
                             }, {}));
@@ -2775,7 +2775,7 @@ export class ActionManager {
                         name: "Sound Restriction",
                         list: () => {
                             let senseTypes = { nothing: "--No Change--", toggle: "--Toggle--" };
-                            senseTypes = Object.assign(senseTypes, Object.keys(CONST.WALL_SENSE_TYPES).reduce((obj, key) => {
+                            senseTypes = Object.assign(senseTypes, Object.keys(CONST.EDGE_SENSE_TYPES).reduce((obj, key) => {
                                 obj[key] = game.i18n.localize(`WALL.SenseTypes.${key}`);
                                 return obj;
                             }, {}));
@@ -2804,7 +2804,7 @@ export class ActionManager {
                             let update = {};
                             update[prop] = value;
                             if (["light", "sight", "sound"].includes(key)) {
-                                const thresholdTypes = [CONST.WALL_SENSE_TYPES.PROXIMITY, CONST.WALL_SENSE_TYPES.DISTANCE];
+                                const thresholdTypes = [CONST.EDGE_SENSE_TYPES.PROXIMITY, CONST.EDGE_SENSE_TYPES.DISTANCE];
                                 if (!thresholdTypes.includes(value)) {
                                     update.threshold = {};
                                     update.threshold[key] = null;
@@ -2834,9 +2834,9 @@ export class ActionManager {
                                     updateProperty(wall, "state", "ds", CONST.WALL_DOOR_STATES, [{ from: CONST.WALL_DOOR_STATES.CLOSED, to: CONST.WALL_DOOR_STATES.OPEN }, { from: CONST.WALL_DOOR_STATES.OPEN, to: CONST.WALL_DOOR_STATES.CLOSED }, { from: CONST.WALL_DOOR_STATES.LOCKED, to: CONST.WALL_DOOR_STATES.OPEN }]),
                                     updateProperty(wall, "type", "door", CONST.WALL_DOOR_TYPES, [{ from: CONST.WALL_DOOR_TYPES.DOOR, to: CONST.WALL_DOOR_TYPES.SECRET }, { from: CONST.WALL_DOOR_TYPES.SECRET, to: CONST.WALL_DOOR_TYPES.DOOR }, { from: CONST.WALL_DOOR_TYPES.NONE, to: CONST.WALL_DOOR_TYPES.DOOR }]),
                                     updateProperty(wall, "movement", "move", CONST.WALL_MOVEMENT_TYPES, [{ from: CONST.WALL_MOVEMENT_TYPES.NONE, to: CONST.WALL_MOVEMENT_TYPES.NORMAL }, { from: CONST.WALL_MOVEMENT_TYPES.NORMAL, to: CONST.WALL_MOVEMENT_TYPES.NONE }]),
-                                    updateProperty(wall, "light", "light", CONST.WALL_SENSE_TYPES, [{ from: CONST.WALL_SENSE_TYPES.NONE, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.LIMITED, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.NORMAL, to: CONST.WALL_SENSE_TYPES.NONE }, { from: CONST.WALL_SENSE_TYPES.PROXIMITY, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.DISTANCE, to: CONST.WALL_SENSE_TYPES.NORMAL }]),
-                                    updateProperty(wall, "sight", "sight", CONST.WALL_SENSE_TYPES, [{ from: CONST.WALL_SENSE_TYPES.NONE, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.LIMITED, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.NORMAL, to: CONST.WALL_SENSE_TYPES.NONE }, { from: CONST.WALL_SENSE_TYPES.PROXIMITY, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.DISTANCE, to: CONST.WALL_SENSE_TYPES.NORMAL }]),
-                                    updateProperty(wall, "sound", "sound", CONST.WALL_SENSE_TYPES, [{ from: CONST.WALL_SENSE_TYPES.NONE, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.LIMITED, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.NORMAL, to: CONST.WALL_SENSE_TYPES.NONE }, { from: CONST.WALL_SENSE_TYPES.PROXIMITY, to: CONST.WALL_SENSE_TYPES.NORMAL }, { from: CONST.WALL_SENSE_TYPES.DISTANCE, to: CONST.WALL_SENSE_TYPES.NORMAL }])
+                                    updateProperty(wall, "light", "light", CONST.EDGE_SENSE_TYPES, [{ from: CONST.EDGE_SENSE_TYPES.NONE, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.LIMITED, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.NORMAL, to: CONST.EDGE_SENSE_TYPES.NONE }, { from: CONST.EDGE_SENSE_TYPES.PROXIMITY, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.DISTANCE, to: CONST.EDGE_SENSE_TYPES.NORMAL }]),
+                                    updateProperty(wall, "sight", "sight", CONST.EDGE_SENSE_TYPES, [{ from: CONST.EDGE_SENSE_TYPES.NONE, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.LIMITED, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.NORMAL, to: CONST.EDGE_SENSE_TYPES.NONE }, { from: CONST.EDGE_SENSE_TYPES.PROXIMITY, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.DISTANCE, to: CONST.EDGE_SENSE_TYPES.NORMAL }]),
+                                    updateProperty(wall, "sound", "sound", CONST.EDGE_SENSE_TYPES, [{ from: CONST.EDGE_SENSE_TYPES.NONE, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.LIMITED, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.NORMAL, to: CONST.EDGE_SENSE_TYPES.NONE }, { from: CONST.EDGE_SENSE_TYPES.PROXIMITY, to: CONST.EDGE_SENSE_TYPES.NORMAL }, { from: CONST.EDGE_SENSE_TYPES.DISTANCE, to: CONST.EDGE_SENSE_TYPES.NORMAL }])
                                 );
                                 MonksActiveTiles.batch.add("update", wall, updates);
                             }
@@ -2850,9 +2850,9 @@ export class ActionManager {
                         { key: "type", icon: "fa-block-brick", types: CONST.WALL_DOOR_TYPES, strings: "DoorTypes" },
                         { key: "state", icon: "fa-door-open", types: CONST.WALL_DOOR_STATES, strings: "DoorStates" },
                         { key: "movement", icon: "fa-person-running", types: CONST.WALL_MOVEMENT_TYPES, strings: "SenseTypes" },
-                        { key: "light", icon: "fa-lightbulb", types: CONST.WALL_SENSE_TYPES, strings: "SenseTypes" },
-                        { key: "sight", icon: "fa-eye", types: CONST.WALL_SENSE_TYPES, strings: "SenseTypes" },
-                        { key: "sound", icon: "fa-volume-high", types: CONST.WALL_SENSE_TYPES, strings: "SenseTypes" }
+                        { key: "light", icon: "fa-lightbulb", types: CONST.EDGE_SENSE_TYPES, strings: "SenseTypes" },
+                        { key: "sight", icon: "fa-eye", types: CONST.EDGE_SENSE_TYPES, strings: "SenseTypes" },
+                        { key: "sound", icon: "fa-volume-high", types: CONST.EDGE_SENSE_TYPES, strings: "SenseTypes" }
                     ];
                     let valueText = values.map(v => {
                         let value = action.data[v.key];
@@ -3091,7 +3091,7 @@ export class ActionManager {
                                         foundry.utils.mergeObject(messageData, { flags: { 'monks-active-tiles': { language } }, lang: language });
                                 }
 
-                                await ChatMessage.create(messageData, { chatBubble: false });
+                                await foundry.documents.ChatMessage.implementation.create(messageData, { chatBubble: false });
                             }
                         }
                     }
@@ -3417,7 +3417,7 @@ export class ActionManager {
                                 }
 
                                 // Create the chat message
-                                ChatMessage.create(messageData, { rollMode: action.data.rollmode });
+                                foundry.documents.ChatMessage.implementation.create(messageData, { rollMode: action.data.rollmode });
                             }
 
                             results.results = results.results.concat(tblResults.results);
@@ -3653,24 +3653,27 @@ export class ActionManager {
                                 for (const [k, v] of Object.entries(effectList)) {
                                     let effect = CONFIG.statusEffects.find(e => e.id === k);
                                     const exists = token.actor.statuses.has(effect.id);
-                                    if (exists)
-                                        await this.object.toggleEffect(effect, { overlay: false });
+                                    if (exists) {
+                                        let effectId = effect.id ?? effect;
+                                        await token.actor.toggleStatusEffect(effectId, { overlay: false });
+                                    }
                                 }
                             }
                         } else {
                             let effect = CONFIG.statusEffects.find(e => e.id === action.data?.effectid);
 
                             if (effect) {
+                                let effectId = effect.id ?? effect;
                                 for (let token of entities) {
                                     if (token == undefined)
                                         continue;
 
                                     if (effectAction == 'toggle')
-                                        await token.object.toggleEffect(effect, { overlay: false });
+                                        await token.object.actor?.toggleStatusEffect(effectId, { overlay: false });
                                     else {
-                                        const exists = token.actor.statuses.has(effect.id);
+                                        const exists = token.actor.statuses.has(effectId);
                                         if (exists != (effectAction == 'add'))
-                                            await token.object.toggleEffect(effect, { overlay: false });
+                                            await token.object.actor?.toggleStatusEffect(effectId, { overlay: false });
                                     }
                                 }
                             }
@@ -4559,7 +4562,7 @@ export class ActionManager {
                     let entityName = await MonksActiveTiles.entityName(action.data?.entity || ctrl?.defvalue || "previous", action.data?.collection || "journal");
                     if (action.data?.entity?.id.startsWith("JournalEntry") && action.data?.page) {
                         let entity = await fromUuid(action.data?.entity?.id);
-                        entityName += `:${entity.pages.get(action.data?.page)?.name}`;
+                        entityName += `:${entity?.pages.get(action.data?.page)?.name}`;
                     }
                     return `<span class="action-style">${i18n(trigger.name)}</span> of <span class="entity-style">${entityName}</span> to <span class="details-style">"${i18n(trigger.values.permissions[action.data?.permission])}"</span> for <span class="value-style">&lt;${MonksActiveTiles.forPlayersName(action.data?.changefor || "everyone") }&gt;</span>`;
                 }
@@ -4707,7 +4710,11 @@ export class ActionManager {
                             item = itemActor.items.get(action.data?.attack?.id);
 
                             if (item) {
-                                let attack = action.data?.rollattack == "true" ? item.rollAttack || item.useAttack || item.rollWeapon : (action.data?.rollattack == "false" ? item.use : false);
+                                let attack = false;
+                                if (game.system.id == "dnd5e")
+                                    attack = action.data?.rollattack == "true" ? item.use : false;
+                                else
+                                    attack = action.data?.rollattack == "true" ? item.rollAttack || item.useAttack || item.rollWeapon : (action.data?.rollattack == "false" ? item.use : false);
 
                                 if (game.system.id == "pf2e" && action.data?.rollattack) {
                                     act = actor.system.actions.find(a => a.item.id == item.id);
@@ -5069,8 +5076,10 @@ export class ActionManager {
                     let batch = new BatchManager();
                     if (action.data.addto == "remove") {
                         entities.filter(t => t instanceof TokenDocument && t.inCombat).forEach(t => {
-                            let combatant = combat.getCombatantByToken(t.id);
-                            batch.add("delete", combatant);
+                            let combatants = combat.getCombatantsByToken(t.id);
+                            combatants.forEach(combatant => {
+                                batch.add("delete", combatant);
+                            });
                         });
                     } else {
                         entities.filter(t => t instanceof TokenDocument && !t.inCombat).forEach(t => {
@@ -5755,7 +5764,7 @@ export class ActionManager {
                 ],
                 fn: async (args = {}) => {
                     let { tile, action } = args;
-                    tile.parent.update({ darkness: action.data.darkness }, { animateDarkness: (action.data.speed * 1000) });
+                    tile.parent.update({ environment: { darknessLevel: action.data.darkness } }, { animateDarkness: (action.data.speed * 1000) });
                 },
                 content: async (trigger, action) => {
                     return `<span class="action-style">Change ${i18n(trigger.name)}</span> set darkness to <span class="details-style">"${action.data.darkness}"</span> after <span class="value-style">&lt;${action.data.speed} seconds&gt;</span>`;
@@ -6072,7 +6081,7 @@ export class ActionManager {
                             name: game.i18n.localize("OK"),
                             continue: true
                         }];
-                        closeGoto = closeGoto ?? "_prevent";
+                        closeGoto = closeGoto ?? "";
                     }
 
                     if (showUsers.includes(game.user.id)) {
@@ -6876,7 +6885,7 @@ export class ActionManager {
                     return `<span class="action-style">${i18n(trigger.name)}</span>`;
                 }
             },
-
+            /* Filter by Distance */
             'distance': {
                 name: "MonksActiveTiles.filter.distance",
                 ctrls: [

@@ -206,6 +206,11 @@ body.theme-light .tile-config.monks-active-tiles:not(.themed) .tab.triggers .act
     flex-direction: column;
 }
 
+#trigger-action .action-container .action-controls {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
 #trigger-action .images-list,
 #trigger-action .buttons-list {
     padding-left: 0px;

@@ -235,6 +235,18 @@ export const registerSettings = function () {
 		default: false,
 		type: Boolean
 	});
+	game.settings.register(modulename, "fix-tile-name", {
+		scope: "world",
+		config: false,
+		default: false,
+		type: Boolean
+	});
+	game.settings.register(modulename, "fix-token-distance", {
+		scope: "world",
+		config: false,
+		default: false,
+		type: Boolean
+	});
 
 	game.settings.register(modulename, "tile-templates", {
 		scope: "world",

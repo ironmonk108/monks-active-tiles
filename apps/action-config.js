@@ -66,6 +66,7 @@ export class ActionConfig extends HandlebarsApplicationMixin(ApplicationV2) {
             "_doorclose",
             "_doorsecret",
             "_doorlock",
+            "_doorunlock",
             "_left",
             "_up",
             "_right",

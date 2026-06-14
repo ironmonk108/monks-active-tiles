@@ -751,7 +751,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "FOLDER.Edit",
                 icon: '<i class="fas fa-edit"></i>',
-                condition: game.user.isGM,
+                visible: game.user.isGM,
                 callback: async (header) => {
                     const li = header.closest(".directory-item");
                     const folders = foundry.utils.duplicate(this.folders);
@@ -779,7 +779,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "FOLDER.Remove",
                 icon: '<i class="fas fa-trash"></i>',
-                condition: game.user.isGM,
+                visible: game.user.isGM,
                 callback: header => {
                     const li = header.closest(".directory-item");
                     const folders = foundry.utils.duplicate(this.folders);
@@ -809,7 +809,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "FOLDER.Delete",
                 icon: '<i class="fas fa-dumpster"></i>',
-                condition: game.user.isGM,
+                visible: game.user.isGM,
                 callback: header => {
                     const li = header.closest(".directory-item");
                     const folders = foundry.utils.duplicate(this.folders);
@@ -844,7 +844,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "FOLDER.Clear",
                 icon: '<i class="fas fa-folder"></i>',
-                condition: li => {
+                visible: li => {
                     const document = this.collection.find(t => t._id == li.dataset.entryId);
                     return game.user.isGM && !!document?.folder;
                 },
@@ -861,7 +861,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "SIDEBAR.Delete",
                 icon: '<i class="fas fa-trash"></i>',
-                condition: () => game.user.isGM,
+                visible: () => game.user.isGM,
                 callback: li => {
                     const templates = foundry.utils.duplicate(this.collection);
                     const id = li.dataset.entryId;
@@ -890,7 +890,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "SIDEBAR.Export",
                 icon: '<i class="fas fa-file-export"></i>',
-                condition: li => game.user.isGM,
+                visible: li => game.user.isGM,
                 callback: li => {
                     const templates = this.collection;
                     const document = templates.find(t => t._id == li.dataset.entryId);
@@ -913,7 +913,7 @@ export class TileTemplates extends foundry.applications.sidebar.DocumentDirector
             {
                 name: "SIDEBAR.Import",
                 icon: '<i class="fas fa-file-import"></i>',
-                condition: li => game.user.isGM,
+                visible: li => game.user.isGM,
                 callback: async (li) => {
                     const templates = foundry.utils.duplicate(this.collection);
                     const replaceId = li.dataset.entryId;

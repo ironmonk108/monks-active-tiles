@@ -753,7 +753,7 @@ export const WithActiveTileConfig = (TileConfig) => {
                 {
                     name: "Insert Above",
                     icon: '<i class="far fa-objects-align-top"></i>',
-                    condition: () => game.user.isGM,
+                    visible: () => game.user.isGM,
                     callback: elem => {
                         let li = $(elem).closest('.action');
                         let idx = li.index();
@@ -763,7 +763,7 @@ export const WithActiveTileConfig = (TileConfig) => {
                 {
                     name: "Insert Below",
                     icon: '<i class="far fa-objects-align-bottom"></i>',
-                    condition: () => game.user.isGM,
+                    visible: () => game.user.isGM,
                     callback: elem => {
                         let li = $(elem).closest('.action');
                         let idx = li.index();
@@ -773,7 +773,7 @@ export const WithActiveTileConfig = (TileConfig) => {
                 {
                     name: "SIDEBAR.Duplicate",
                     icon: '<i class="far fa-copy"></i>',
-                    condition: () => game.user.isGM,
+                    visible: () => game.user.isGM,
                     callback: elem => {
                         let li = elem.closest('.action');
                         const id = li.dataset.actionId;
@@ -783,7 +783,7 @@ export const WithActiveTileConfig = (TileConfig) => {
                 {
                     name: "SIDEBAR.Delete",
                     icon: '<i class="fas fa-trash"></i>',
-                    condition: () => game.user.isGM,
+                    visible: () => game.user.isGM,
                     callback: elem => {
                         let li = elem.closest('.action');
                         const id = li.dataset.actionId;;

@@ -61,7 +61,7 @@
   "MonksActiveTiles.UnknownEntity": "Unknown Entity",
   "MonksActiveTiles.ActiveScene": "Active Scene",
   "MonksActiveTiles.TriggeringTokenScene": "Triggering Token Scene",
-  "MonksActiveTiles.TokenVision": "Token must have sight to trigger",
+  "MonksActiveTiles.TokenVision": "Must have line of sight to Tile",
   "MonksActiveTiles.DoorTriggers": "Door Triggers",
 
   "MonksActiveTiles.actiontext.pause": "<action>{pause} game</action>",
