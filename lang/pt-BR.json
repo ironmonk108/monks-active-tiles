@@ -1,24 +1,24 @@
 {
   "MonksActiveTiles.Triggers": "Gatilhos",
-  "MonksActiveTiles.TriggersHint": "Configuração para quando um jogador interagir com esta peça",
-  "MonksActiveTiles.TriggersImages": "Lista de imagens adicionais para esta peça",
+  "MonksActiveTiles.TriggersHint": "Configuração para quando um jogador interagir com este tile",
+  "MonksActiveTiles.TriggersImages": "Lista de imagens adicionais para este tile",
   "MonksActiveTiles.TriggerAction": "Ação de Gatilho",
 
-  "MonksActiveTiles.ThisTile": "Esta Peça",
+  "MonksActiveTiles.ThisTile": "Este Tile",
   "MonksActiveTiles.TriggeringToken": "Token Desencadeador",
   "MonksActiveTiles.PlayerTokens": "Tokens de Jogadores",
   "MonksActiveTiles.CurrentLocation": "Localização Atual",
-  "MonksActiveTiles.WithinTile": "{collection} dentro da Peça",
-  "MonksActiveTiles.WithinWall": "Peças sob a Porta",
+  "MonksActiveTiles.WithinTile": "{collection} dentro do Tile",
+  "MonksActiveTiles.WithinWall": "Tiles sob a Porta",
   "MonksActiveTiles.CurrentCollection": "{collection} Atual",
   "MonksActiveTiles.Origin": "Destino Original",
   "MonksActiveTiles.Controlled": "Tokens Controlados",
   "MonksActiveTiles.CurrentlyPlaying": "Atualmente Jogando",
-  "MonksActiveTiles.TileVariables": "Variáveis de Peça",
+  "MonksActiveTiles.TileVariables": "Variáveis de Tile",
   "MonksActiveTiles.ClearVariables": "Limpar Variáveis",
-  "MonksActiveTiles.TileHistory": "Histórico da Peça",
+  "MonksActiveTiles.TileHistory": "Histórico do Tile",
   "MonksActiveTiles.ResetHistory": "Redefinir Histórico",
-  "MonksActiveTiles.SelectTile": "Selecionar Peça",
+  "MonksActiveTiles.SelectTile": "Selecionar Tile",
   "MonksActiveTiles.Match": "Corresponder",
   "MonksActiveTiles.Scene": "Cena",
 
@@ -50,7 +50,7 @@
   "MonksActiveTiles.Sounds": "Sons Tocando",
   "MonksActiveTiles.AllowWhenPaused": "Permitir Quando Pausado",
   "MonksActiveTiles.ShownImage": "Imagem Mostrada",
-  "MonksActiveTiles.TileTemplates": "Modelos de Peças",
+  "MonksActiveTiles.TileTemplates": "Modelos de Tiles",
   "MonksActiveTiles.Players": "Jogadores",
   "MonksActiveTiles.Cooldown": "Tempo de Recarga (seg)",
   "MonksActiveTiles.MultiplePlayers": "Múltiplos Jogadores ({players})",
@@ -61,7 +61,7 @@
   "MonksActiveTiles.UnknownEntity": "Entidade Desconhecida",
   "MonksActiveTiles.ActiveScene": "Cena Ativa",
   "MonksActiveTiles.TriggeringTokenScene": "Cena de Ativação do Token",
-  "MonksActiveTiles.TokenVision": "Token Precisa Ver para Ativar",
+  "MonksActiveTiles.TokenVision": "Deve ter Linha de Visão para o Tile",
   "MonksActiveTiles.DoorTriggers": "Gatilhos de Porta",
 
   "MonksActiveTiles.actiontext.pause": "<action>{pause} jogo</action>",
@@ -91,18 +91,18 @@
   "MonksActiveTiles.action.activeeffect": "Efeito Ativo",
   "MonksActiveTiles.action.movement": "Mover",
   "MonksActiveTiles.action.createtoken": "Criar Token",
-  "MonksActiveTiles.action.playanimation": "Animação da Peça",
+  "MonksActiveTiles.action.playanimation": "Animação do Tile",
   "MonksActiveTiles.action.openjournal": "Abrir um Diário",
   "MonksActiveTiles.action.openactor": "Abrir uma Ficha de Ator",
   "MonksActiveTiles.action.additem": "Adicionar Item",
   "MonksActiveTiles.action.permission": "Alterar Permissões",
   "MonksActiveTiles.action.attack": "Atacar",
-  "MonksActiveTiles.action.trigger": "Peça de Gatilho",
+  "MonksActiveTiles.action.trigger": "Tile de Gatilho",
   "MonksActiveTiles.action.scene": "Mudar Cena",
   "MonksActiveTiles.action.addtocombat": "Adicionar ao Combate",
   "MonksActiveTiles.action.elevation": "Elevação",
   "MonksActiveTiles.action.hurtheal": "Machucar/Curar",
-  "MonksActiveTiles.action.resethistory": "Redefinir Histórico de Acionamento de Peças",
+  "MonksActiveTiles.action.resethistory": "Redefinir Histórico de Acionamento de Tiles",
   "MonksActiveTiles.action.delay": "Atrasar Ações",
   "MonksActiveTiles.action.imagecycle": "Imagens de Ciclo",
   "MonksActiveTiles.action.imagecycleset": "Imagens de Ciclo, Definir Imagem",
@@ -116,25 +116,25 @@
   "MonksActiveTiles.action.scrollingtext": "Texto de Rolagem",
   "MonksActiveTiles.action.preload": "Pré-carregar Cena",
   "MonksActiveTiles.action.removeitem": "Remover Item",
-  "MonksActiveTiles.action.tileimage": "Trocar Imagem da Peça",
+  "MonksActiveTiles.action.tileimage": "Trocar Imagem do Tile",
   "MonksActiveTiles.action.runbatch": "Executar Todas as Ações em Lote",
   "MonksActiveTiles.action.rotation": "Rotação",
   "MonksActiveTiles.action.showimage": "Mostrar Imagem",
   "MonksActiveTiles.action.writetojournal": "Escrever no Diário",
-  "MonksActiveTiles.action.setvariable": "Definir Variável de Peças Ativas",
-  "MonksActiveTiles.action.setcurrent": "Definir Coleção Atual de Peças Ativas",
+  "MonksActiveTiles.action.setvariable": "Definir Variável de Tiles Ativos",
+  "MonksActiveTiles.action.setcurrent": "Definir Coleção Atual de Tiles Ativos",
   "MonksActiveTiles.action.closedialog": "Fechar Diálogo",
   "MonksActiveTiles.action.url": "Abrir URL",
-  "MonksActiveTiles.action.tempimage": "Imagem Temporária de Peça",
+  "MonksActiveTiles.action.tempimage": "Imagem Temporária de Tile",
   "MonksActiveTiles.action.ping": "Ping",
   "MonksActiveTiles.action.gametime": "Tempo do Jogo",
   "MonksActiveTiles.action.shuffle": "Embaralhar Coleção",
-  "MonksActiveTiles.action.preloadtileimage": "Pré-carregar Imagens de Peça",
+  "MonksActiveTiles.action.preloadtileimage": "Pré-carregar Imagens de Tile",
   "MonksActiveTiles.action.runcode": "Executar Código",
 
   "MonksActiveTiles.filter.distance": "Filtrar Tokens por Distância",
   "MonksActiveTiles.filter.exists": "Verificar Contagem de Entidades",
-  "MonksActiveTiles.filter.triggercount": "Verificar Contagem de Gatilhos de Peças",
+  "MonksActiveTiles.filter.triggercount": "Verificar Contagem de Gatilhos de Tiles",
   "MonksActiveTiles.filter.tokencount": "Filtrar por Contagem de Acionamentos de Tokens",
   "MonksActiveTiles.filter.first": "Posição na Lista",
   "MonksActiveTiles.filter.attribute": "Filtrar por Atributos",
@@ -152,13 +152,13 @@
   "MonksActiveTiles.logic.loop": "Iterar sobre Entidades",
   "MonksActiveTiles.logic.method": "Redirecionar Baseado no Método",
   "MonksActiveTiles.logic.checkdata": "Verificar Dados",
-  "MonksActiveTiles.logic.stoptriggers": "Parar Acionamento Adicional de Peças",
+  "MonksActiveTiles.logic.stoptriggers": "Parar Acionamento Adicional de Tiles",
 
   "MonksActiveTiles.ctrl.snap": "Ajustar à grade",
   "MonksActiveTiles.ctrl.select-coordinates": "Selecionar Coordenadas",
   "MonksActiveTiles.ctrl.select-entity": "Selecionar Entidade",
   "MonksActiveTiles.ctrl.select-actor": "Selecionar Ator",
-  "MonksActiveTiles.ctrl.select-tile": "Selecionar Peça",
+  "MonksActiveTiles.ctrl.select-tile": "Selecionar Tile",
   "MonksActiveTiles.ctrl.select-token": "Selecionar Token",
   "MonksActiveTiles.ctrl.state": "Estado",
   "MonksActiveTiles.ctrl.attribute": "Atributo",
@@ -215,7 +215,7 @@
   "MonksActiveTiles.ctrl.imgat": "Mostrando Imagem #",
   "MonksActiveTiles.ctrl.enhanced": "Usar Monk's Enhanced Journal",
   "MonksActiveTiles.ctrl.stopwhenreached": "Parar Quando Alcançado no Código",
-  "MonksActiveTiles.ctrl.triggertiles": "Acionar peças durante movimentação",
+  "MonksActiveTiles.ctrl.triggertiles": "Acionar tiles durante movimentação",
   "MonksActiveTiles.ctrl.icon": "Ícone de Entrada",
   "MonksActiveTiles.ctrl.tag": "Nome da Etiqueta",
   "MonksActiveTiles.ctrl.random": "Aleatório",
@@ -314,7 +314,7 @@
   "MonksActiveTiles.mode.hoverin": "Passar o Mouse para Dentro",
   "MonksActiveTiles.mode.hoverout": "Passar o Mouse para Fora",
   "MonksActiveTiles.mode.manual": "Ativar Manualmente",
-  "MonksActiveTiles.mode.stop": "Parar Dentro da Peça",
+  "MonksActiveTiles.mode.stop": "Parar Dentro do Tile",
   "MonksActiveTiles.mode.round": "Rodada de Combate",
   "MonksActiveTiles.mode.turn": "Início do Turno de Combate",
   "MonksActiveTiles.mode.turnend": "Fim do Turno de Combate",
@@ -361,7 +361,7 @@
   "MonksActiveTiles.for.current": "Usuários Atuais",
 
   "MonksActiveTiles.audiotype.all": "Sons Ambientes",
-  "MonksActiveTiles.audiotype.tile": "Sons de Peças",
+  "MonksActiveTiles.audiotype.tile": "Sons de Tiles",
 
   "MonksActiveTiles.state.open": "Aberto",
   "MonksActiveTiles.state.closed": "Fechado",
@@ -480,12 +480,12 @@
   "MonksActiveTiles.msg.select-user": "Selecione um usuário",
   "MonksActiveTiles.msg.selectlocation": "Selecione um local",
   "MonksActiveTiles.msg.selectentity": "Selecione uma entidade",
-  "MonksActiveTiles.msg.usetile": "Usar esta peça",
+  "MonksActiveTiles.msg.usetile": "Usar este tile",
   "MonksActiveTiles.msg.usetoken": "Usar o token de ativação",
   "MonksActiveTiles.msg.useplayers": "Usar tokens de jogador",
   "MonksActiveTiles.msg.useplayersjournal": "Usar diário de jogador",
-  "MonksActiveTiles.msg.usewithin": "Usar entidades dentro da peça de ativação",
-  "MonksActiveTiles.msg.usewithinwall": "Peça de Gatilho embaixo desta porta",
+  "MonksActiveTiles.msg.usewithin": "Usar entidades dentro do tile de ativação",
+  "MonksActiveTiles.msg.usewithinwall": "Tile de Gatilho embaixo desta porta",
   "MonksActiveTiles.msg.useprevious": "Usar esta coleção atual de ações",
   "MonksActiveTiles.msg.usepreviouslocation": "Usar a localização atual desta ação",
   "MonksActiveTiles.msg.usecontrolled": "Usar Tokens atualmente controlados",
@@ -500,7 +500,7 @@
   "MonksActiveTiles.msg.usescene": "Usar cena ativa",
 
   "MonksActiveTiles.allow-player.name": "Permitir Jogadores",
-  "MonksActiveTiles.allow-player.hint": "Permite que os jogadores ativem as Peças caso não haja um Mestre presente.",
+  "MonksActiveTiles.allow-player.hint": "Permite que os jogadores ativem os Tiles caso não haja um Mestre presente.",
   "MonksActiveTiles.use-core-macro.name": "Usar Execução de Macro Principal",
   "MonksActiveTiles.use-core-macro.hint": "A execução de macros padrão não transmite todas as informações disponíveis, portanto, o Active Tiles se encarrega de executá-las. Ative essa opção novamente se estiver causando problemas.",
   "MonksActiveTiles.drop-item.name": "Soltar Item na Tela",
@@ -508,33 +508,33 @@
   "MonksActiveTiles.drop-scene.name": "Soltar Cena na Tela",
   "MonksActiveTiles.drop-scene.hint": "Permite que as cenas arrastadas para a tela sejam criadas como Active Tiles",
   "MonksActiveTiles.allow-door.name": "Gatilhos de Porta",
-  "MonksActiveTiles.allow-door.hint": "Permite que as portas acionem as Peças",
+  "MonksActiveTiles.allow-door.hint": "Permite que as portas acionem os Tiles",
   "MonksActiveTiles.teleport-wash.name": "Mostrar Transição de Teleporte",
   "MonksActiveTiles.teleport-wash.hint": "Quando um token se teletransportar, adiciona uma transição suave na tela para evitar desorientação durante a mudança de Cena.",
   "MonksActiveTiles.teleport-colour.name": "Cor da Suavização de Teleporte",
   "MonksActiveTiles.teleport-colour.hint": "Cor a ser usada para a transição suave quando um token se teletransporta",
   "MonksActiveTiles.default-trigger.name": "Gatilho Padrão",
-  "MonksActiveTiles.default-trigger.hint": "Gatilho padrão a ser usado ao criar uma Peça",
+  "MonksActiveTiles.default-trigger.hint": "Gatilho padrão a ser usado ao criar um Tile",
   "MonksActiveTiles.default-restricted.name": "Restrição Padrão",
-  "MonksActiveTiles.default-restricted.hint": "Restrição padrão a ser usada ao criar uma Peça",
+  "MonksActiveTiles.default-restricted.hint": "Restrição padrão a ser usada ao criar um Tile",
   "MonksActiveTiles.default-controlled.name": "Padrão Controlado",
-  "MonksActiveTiles.default-controlled.hint": "Controlado por padrão a ser usada ao criar uma Peça",
+  "MonksActiveTiles.default-controlled.hint": "Controlado por padrão a ser usada ao criar um Tile",
   "MonksActiveTiles.show-help.name": "Mostrar Dicas",
   "MonksActiveTiles.show-help.hint": "Exibir dicas úteis de ação para campos que possuem valores complexos",
   "MonksActiveTiles.prevent-when-paused.name": "Impedir Quando Pausado",
-  "MonksActiveTiles.prevent-when-paused.hint": "Previne que os jogadores acionem Peças quando o jogo estiver pausado.",
+  "MonksActiveTiles.prevent-when-paused.hint": "Previne que os jogadores acionem Tiles quando o jogo estiver pausado.",
   "MonksActiveTiles.allow-door-passthrough.name": "Permitir Gatilho por Clique na Porta",
-  "MonksActiveTiles.allow-door-passthrough.hint": "Permite que as Peças embaixo de uma porta continuem sendo ativados mesmo se a porta for clicada",
+  "MonksActiveTiles.allow-door-passthrough.hint": "Permite que os Tiles embaixo de uma porta continuem sendo ativados mesmo se a porta for clicada",
   "MonksActiveTiles.drop-item-size.name": "Tamanho do Item Solto",
   "MonksActiveTiles.drop-item-size.hint": "Defina o tamanho do item que será solto",
   "MonksActiveTiles.show-landing.name": "Mostrar Destaque de Destino",
   "MonksActiveTiles.show-landing.hint": "Destaque as ações que ocorrem nos destinos",
   "MonksActiveTiles.drop-macro.name": "Soltar Macro na Tela",
   "MonksActiveTiles.drop-macro.hint": "Permite que as macros arrastadas para a tela sejam criadas como Active Tiles",
-  "MonksActiveTiles.tile-edit.name": "Permitir Edição de Modelos de Peças",
-  "MonksActiveTiles.tile-edit.hint": "Permite a edição de modelos de peças. Recomendo fortemente que você não use essa opção a menos que tenha certeza do que está fazendo",
-  "MonksActiveTiles.show-imageless.name": "Mostrar Peça Sem Imagem",
-  "MonksActiveTiles.show-imageless.hint": "Mostre a peça na camada de tokens ao Mestre se não houver nenhuma imagem definida",
+  "MonksActiveTiles.tile-edit.name": "Permitir Edição de Modelos de Tiles",
+  "MonksActiveTiles.tile-edit.hint": "Permite a edição de modelos de tiles. Recomendo fortemente que você não use essa opção a menos que tenha certeza do que está fazendo",
+  "MonksActiveTiles.show-imageless.name": "Mostrar Tile Sem Imagem",
+  "MonksActiveTiles.show-imageless.hint": "Exibe o tile na camada de tokens ao Mestre se não houver nenhuma imagem definida",
 
   "MonksActiveTiles.tabs.setup": "Configurar",
   "MonksActiveTiles.tabs.actions": "Ações",
@@ -558,7 +558,7 @@
   "SIDEBAR": {
     "ACTIONS": {
       "CREATE": {
-        "Tile": "Criar Peça"
+        "Tile": "Criar Tile"
       }
     }
   },
@@ -566,7 +566,7 @@
   "TYPES": {
     "RegionBehavior": {
       "monks-active-tiles": {
-        "triggerTile": "Peça de Gatilho"
+        "triggerTile": "Tile de Gatilho"
       }
     }
   },
@@ -575,12 +575,12 @@
       "triggerTile": {
         "FIELDS": {
           "uuid": {
-            "label": "Peça",
-            "hint": "Peça para acionar"
+            "label": "Tile",
+            "hint": "Tile para acionar"
           },
           "usetiletrigger": {
             "label": "Acionar usando evento",
-            "hint": "Acione a peça usando os dados do evento da região"
+            "hint": "Acione o tile usando os dados do evento da região"
           }
         }
       }
