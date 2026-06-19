@@ -3951,7 +3951,11 @@ export class MonksActiveTiles {
                 if (data.users.includes(game.user.id)) {
                     let token = canvas.tokens.get(data.tokenId);
                     if (token) {
-                        canvas.hud.bubbles.say(token, data.content);
+                        let bubbleElement = await canvas.hud.bubbles.say(token, data.content);
+                        if (bubbleElement?.offsetLeft <= 0 && bubbleElement?.offsetTop <= 0) {
+                            bubbleElement.offsetLeft = token.document.x + bubbleOffset.x;
+                            bubbleElement.offsetTop = token.document.y + bubbleOffset.y;
+                        }
                     }
                 } 
             } break;
@@ -4198,7 +4202,7 @@ export class MonksActiveTiles {
             if (lx < 0 || lx > w || ly < 0 || ly > h)
                 return false;
 
-            return triggerData?.usealpha && this._object?._texturePolygon ? this._object?._texturePolygon.contains(pt.x, pt.y) : true;
+            return triggerData?.usealpha && this._object?._texturePolygon ? this._object?._texturePolygon.contains(lx, ly) : true;
         }
 
         TileDocument.prototype.tokensWithin = function () {

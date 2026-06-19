@@ -3054,7 +3054,11 @@ export class ActionManager {
                                 if (tkn instanceof foundry.canvas.placeables.Token) {
                                     let su = foundry.utils.duplicate(showUsers);
                                     if (su.includes(game.user.id) && canvas.scene.id == tkn.document.parent.id) {
-                                        canvas.hud.bubbles.say(tkn, content);
+                                        let bubbleElement = await canvas.hud.bubbles.say(tkn, content);
+                                        if (bubbleElement?.offsetLeft < 0 && bubbleElement?.offsetTop < 0) {
+                                            bubbleElement.offsetLeft = tkn.x + bubbleOffset.x;
+                                            bubbleElement.offsetTop = tkn.y + bubbleOffset.y;
+                                        }
                                         su = su.filter(u => u != game.user.id);
                                     }
                                     if (su.length) {
