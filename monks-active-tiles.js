@@ -4534,22 +4534,24 @@ export class MonksActiveTiles {
             if(!this._textureBorderPoints) return;
 
             let { x, y, rotation, width, height, texture: { scaleX, scaleY, anchorX, anchorY, src } } = this.document;
+            if(!src) {
+                this._texturePolygon = new PIXI.Polygon(this.document.shape.polygons[0].points)
+                return;
+            }
+
+
             const dr = Math.toRadians(rotation);
 
-            let aScaleX, aScaleY;
-            if(src) {
-                const accuracy = 2;
-                aScaleX = (accuracy / (this.texture.width / width)) * scaleX;
-                aScaleY = (accuracy / (this.texture.height / height)) * scaleY;
-            }
+            const accuracy = 2;
+            const aScaleX = (accuracy / (this.texture.width / width)) * scaleX;
+            const aScaleY = (accuracy / (this.texture.height / height)) * scaleY;
+    
 
             const points = [...this._textureBorderPoints];
             for(let i = 0; i < points.length; i +=2) {
                 // Scale
-                if(src) {
-                    points[i] *= aScaleX;
-                    points[i+1] *= aScaleY;
-                }
+                points[i] *= aScaleX;
+                points[i+1] *= aScaleY;
 
                 // Translate
                 points[i] += (x - width * anchorX * scaleX);
