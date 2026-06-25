@@ -422,10 +422,7 @@ export class ActionManager {
                     let offsetPans = [];
                     let switchViews = [];
 
-                    let oldTile = {
-                        x: tile.x + (Math.abs(tile.width) / 2),
-                        y: tile.y + (Math.abs(tile.height) / 2)
-                    }
+                    const oldTile = tile.shape.center;
 
                     let tokenTransfers = {};
 
@@ -492,8 +489,7 @@ export class ActionManager {
                             let destpos = action.data.position;
 
                             if (destpos == "center") {
-                                entDest.x = dest.dest.x + (dest.dest.width / 2);
-                                entDest.y = dest.dest.y + (dest.dest.height / 2);
+                                ({x: entDest.x, y: entDest.y} = dest.dest.shape.center);
                             } else if (destpos == "relative") {
                                 let usePt = foundry.utils.duplicate(pt);
                                 if (!["enter", "exit", "click", "dblclick", "rightclick", "dblrightclick"].includes(method) && tile.pointWithin(pt))
@@ -502,37 +498,38 @@ export class ActionManager {
                                 let deltaX1 = (usePt.x - oldTile.x);
                                 let deltaY1 = (usePt.y - oldTile.y);
 
-                                let percX = deltaX1 / (Math.abs(tile.width) / 2);
-                                let percY = deltaY1 / (Math.abs(tile.height) / 2);
+                                let percX = deltaX1 / (Math.abs(tile.shape.bounds.width) / 2);
+                                let percY = deltaY1 / (Math.abs(tile.shape.bounds.height) / 2);
 
-                                let deltaX2 = (Math.abs(dest.dest.width) / 2) * percX;
-                                let deltaY2 = (Math.abs(dest.dest.height) / 2) * percY;
+                                const destBounds = dest.dest.shape.bounds;
+                                let deltaX2 = (Math.abs(destBounds.width) / 2) * percX;
+                                let deltaY2 = (Math.abs(destBounds.height) / 2) * percY;
 
                                 if (dest.dest.texture?.scaleX < 0)
                                     deltaX2 = -deltaX2;
                                 if (dest.dest.texture?.scaleY < 0)
                                     deltaY2 = -deltaY2;
 
-                                let midDestX = dest.dest.x + (Math.abs(dest.dest.width) / 2);
-                                let midDestY = dest.dest.y + (Math.abs(dest.dest.height) / 2);
-
+                                const { x: midDestX, y: midDestY } = dest.dest.shape.center;
                                 if (parseInt(midDestX + deltaX2).toNearest(dest.dest.parent.dimensions.size) == parseInt(midDestX + deltaX2) && deltaX2 > 0)
                                     deltaX2 *= 0.99;
                                 if (parseInt(midDestY + deltaY2).toNearest(dest.dest.parent.dimensions.size) == parseInt(midDestY + deltaY2) && deltaY2 > 0)
                                     deltaY2 *= 0.99;
 
-                                entDest.x = Math.clamp(parseInt(midDestX + deltaX2), dest.dest.x, dest.dest.x + dest.dest.width);
-                                entDest.y = Math.clamp(parseInt(midDestY + deltaY2), dest.dest.y, dest.dest.y + dest.dest.height);
+                                entDest.x = Math.clamp(parseInt(midDestX + deltaX2), destBounds.x, destBounds.x + destBounds.width);
+                                entDest.y = Math.clamp(parseInt(midDestY + deltaY2), destBounds.y, destBounds.y + destBounds.height);
                             } else {
                                 // Find a random location within this Tile
-                                entDest.x = dest.dest.x + Math.floor((Math.random() * Math.abs(dest.dest.width)));
-                                entDest.y = dest.dest.y + Math.floor((Math.random() * Math.abs(dest.dest.height)));
+                                const sample = dest.dest.shape.sampleInterior();
+                                entDest.x = Math.floor(sample.x);
+                                entDest.y = Math.floor(sample.y);
                             }
 
                             if (!dest.dest.pointWithin(entDest)) {
                                 // If this dest is not within the Tile, then find a random point
-                                entDest.x = dest.dest.x + Math.floor((Math.random() * Math.abs(dest.dest.width)));
-                                entDest.y = dest.dest.y + Math.floor((Math.random() * Math.abs(dest.dest.height)));
+                                const sample = dest.dest.shape.sampleInterior();
+                                entDest.x = Math.floor(sample.x);
+                                entDest.y = Math.floor(sample.y);
                             }
                         }
 
@@ -791,10 +788,7 @@ export class ActionManager {
                 fn: async (args = {}) => {
                     const { tile, tokens, action, value, pt, method } = args;
 
-                    let oldTile = {
-                        x: tile.x + (Math.abs(tile.width) / 2),
-                        y: tile.y + (Math.abs(tile.height) / 2)
-                    }
+                    const oldTile = tile.shape.center;
                     //wait for animate movement
                     let entities = await MonksActiveTiles.getEntities(args, "tokens");
 
@@ -865,8 +859,7 @@ export class ActionManager {
 
                             if (dest.dest instanceof TileDocument) {
                                 if (action.data.position == "center") {
-                                    entDest.x = dest.dest.x + (dest.dest.width / 2);
-                                    entDest.y = dest.dest.y + (dest.dest.height / 2);
+                                    ({ x: entDest.x, y: entDest.y } = dest.dest.shape.center);
                                 } else if (action.data.position == "relative") {
                                     let usePt = foundry.utils.duplicate(pt);
                                     if (!["enter", "exit", "click", "dblclick", "rightclick", "dblrightclick"].includes(method) && tile.pointWithin(pt))
@@ -875,8 +868,8 @@ export class ActionManager {
                                     let deltaX = (usePt.x - oldTile.x);
                                     let deltaY = (usePt.y - oldTile.y);
 
-                                    let destW = Math.abs(dest.dest.width);
-                                    let destH = Math.abs(dest.dest.width);
+                                    const destBounds = dest.dest.shape.bounds;
+                                    let { width: destW, height: destH } = destBounds;
 
                                     if (method == "enter" || method == "exit") {
                                         let hW = ((entity.parent.dimensions.size * Math.abs(entity.width)) / 2);
@@ -886,18 +879,19 @@ export class ActionManager {
                                         destH -= (method == "enter" ? hH : -hH);
                                     }
 
-                                    deltaX = deltaX * (destW / Math.abs(tile.width));
-                                    deltaY = deltaY * (destH / Math.abs(tile.height));
+                                    deltaX = deltaX * (destW / Math.abs(tile.shape.bounds.width));
+                                    deltaY = deltaY * (destH / Math.abs(tile.shape.bounds.height));
 
-                                    let midDestX = dest.dest.x + (Math.abs(dest.dest.width) / 2);
-                                    let midDestY = dest.dest.y + (Math.abs(dest.dest.height) / 2);
+                                    const { x: midDestX, y: midDestY } = dest.dest.shape.center;
 
-                                    entDest.x = Math.clamp(midDestX + deltaX, dest.dest.x, dest.dest.x + dest.dest.width);
-                                    entDest.y = Math.clamp(midDestY + deltaY, dest.dest.y, dest.dest.y + dest.dest.height);
+    
+                                    entDest.x = Math.clamp(midDestX + deltaX, destBounds.x, destBounds.x + destBounds.width);
+                                    entDest.y = Math.clamp(midDestY + deltaY, destBounds.y, destBounds.y + destBounds.height);
                                 } else {
                                     // Find a random location within this Tile
-                                    entDest.x = dest.dest.x + Math.floor((Math.random() * Math.abs(dest.dest.width)));
-                                    entDest.y = dest.dest.y + Math.floor((Math.random() * Math.abs(dest.dest.height)));
+                                    const sample = dest.dest.shape.sampleInterior();
+                                    entDest.x = Math.floor(sample.x);
+                                    entDest.y = Math.floor(sample.y);
                                 }
                             }
 
@@ -1324,14 +1318,14 @@ export class ActionManager {
                                                 if (entDest) {
                                                     if (dest.dest instanceof TileDocument) {
                                                         if (action.data.position == "center") {
-                                                            entDest.x = dest.dest.x + (dest.dest.width / 2);
-                                                            entDest.y = dest.dest.y + (dest.dest.height / 2);
+                                                            ({x: entDest.x, y: entDest.y} = dest.dest.shape.center);
                                                         } else {
                                                             // Find a random location within this Tile
                                                             let midX = ((canvas.scene.dimensions.size * Math.abs(entity.width ?? 1)) / 2);
                                                             let midY = ((canvas.scene.dimensions.size * Math.abs(entity.height ?? 1)) / 2);
-                                                            entDest.x = (dest.dest.x + midX) + Math.floor((Math.random() * (Math.abs(dest.dest.width) - (Math.abs(actor.prototypeToken.width) * canvas.scene.dimensions.size))));
-                                                            entDest.y = (dest.dest.y + midY) + Math.floor((Math.random() * (Math.abs(dest.dest.height) - (Math.abs(actor.prototypeToken.height) * canvas.scene.dimensions.size))));
+                                                            const bounds = dest.dest.shape.bounds();
+                                                            entDest.x = (bounds.x + midX) + Math.floor((Math.random() * (Math.abs(bounds.width) - (Math.abs(actor.prototypeToken.width) * canvas.scene.dimensions.size))));
+                                                            entDest.y = (bounds.y + midY) + Math.floor((Math.random() * (Math.abs(bounds.height) - (Math.abs(actor.prototypeToken.height) * canvas.scene.dimensions.size))));
                                                         }
                                                     }
                                                     let data = {
@@ -1395,18 +1389,17 @@ export class ActionManager {
                                 if (dest && entDest) {
                                     if (dest.dest instanceof TileDocument) {
                                         // Find a random location within this Tile
-                                        if (dest.dest instanceof TileDocument) {
-                                            if (action.data.position == "center") {
-                                                entDest.x = dest.dest.x + (dest.dest.width / 2);
-                                                entDest.y = dest.dest.y + (dest.dest.height / 2);
-                                            } else {
-                                                // Find a random location within this Tile
-                                                let midX = ((canvas.scene.dimensions.size * Math.abs(entity.prototypeToken.width)) / 2);
-                                                let midY = ((canvas.scene.dimensions.size * Math.abs(entity.prototypeToken.height)) / 2);
-                                                entDest.x = (dest.dest.x + midX) + Math.floor((Math.random() * (Math.abs(dest.dest.width) - (Math.abs(entity.prototypeToken.width) * canvas.scene.dimensions.size))));
-                                                entDest.y = (dest.dest.y + midY) + Math.floor((Math.random() * (Math.abs(dest.dest.height) - (Math.abs(entity.prototypeToken.height) * canvas.scene.dimensions.size))));
-                                            }
+                                        if (action.data.position == "center") {
+                                            ({x: entDest.x, y: entDest.y} = dest.dest.shape.center);
+                                        } else {
+                                            // Find a random location within this Tile
+                                            let midX = ((canvas.scene.dimensions.size * Math.abs(entity.prototypeToken.width)) / 2);
+                                            let midY = ((canvas.scene.dimensions.size * Math.abs(entity.prototypeToken.height)) / 2);
+                                            const bounds = dest.dest.shape.bounds();
+                                            entDest.x = (bounds.x + midX) + Math.floor((Math.random() * (Math.abs(bounds.width) - (Math.abs(entity.prototypeToken.width) * canvas.scene.dimensions.size))));
+                                            entDest.y = (bounds.y + midY) + Math.floor((Math.random() * (Math.abs(bounds.height) - (Math.abs(entity.prototypeToken.height) * canvas.scene.dimensions.size))));
                                         }
+                                        
                                     } else {
                                         if (entDest.x) {
                                             let roll = await rollDice(entDest.x);
@@ -1582,8 +1575,9 @@ export class ActionManager {
 
                                 if (dest.dest instanceof TileDocument) {
                                     // Find a random location within this Tile
-                                    dest.x = dest.dest.x + Math.floor((Math.random() * Math.abs(dest.dest.width)));
-                                    dest.y = dest.dest.y + Math.floor((Math.random() * Math.abs(dest.dest.height)));
+                                    const sample = dest.dest.shape.sampleInterior();
+                                    dest.x = Math.floor(sample.x);
+                                    dest.y = Math.floor(sample.y);
                                 } else {
                                     if (dest.x) {
                                         let roll = await rollDice(dest.x);
@@ -6972,9 +6966,8 @@ export class ActionManager {
                 group: "filters",
                 fn: async (args = {}) => {
                     const { tile, value, action } = args;
-
-                    let midTile = { x: tile.x + (Math.abs(tile.width) / 2), y: tile.y + (Math.abs(tile.height) / 2) };
-
+        
+                    let midTile = tile.shape.center;
                     let entities = await MonksActiveTiles.getEntities(args);
 
                     let tokens = entities.filter(t => {

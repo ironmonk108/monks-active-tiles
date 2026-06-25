@@ -820,6 +820,18 @@ export class MonksActiveTiles {
 
                 if (dest) {
                     let found = false;
+                    if(dest instanceof foundry.documents.TileDocument) {
+                        const bounds = dest.shape.bounds;
+                        location[i] = {
+                            x: bounds.center.x,
+                            y: bounds.center.y,
+                            width: bounds.width,
+                            height: bounds.height,
+                            scene: dest.parent.id,
+                            dest: dest
+                        };
+                        found = true;
+                    }
                     /*
                     if (dest instanceof DrawingDocument) {
                         //drawing
