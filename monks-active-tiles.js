@@ -6211,11 +6211,11 @@ Hooks.on('updateTile', async (document, update, options, userId) => {
         let triggerData = document.flags["monks-active-tiles"];
         if (triggerData?.usealpha) {
             window.setTimeout(function () {
-                document.object._findTextureBorder();
+                document.object?._findTextureBorder();
             }, 500);
         }
     } else if (update.x != undefined || update.y != undefined || update.rotation != undefined || update.width != undefined || update.height != undefined || update.texture != undefined) {
-        document.object._genTexturePolygon();
+        document.object?._genTexturePolygon();
     }
 });
 
